@@ -12,7 +12,26 @@ sovaehr/
 ├── 📄 Cargo.lock                   # Rust dependency lock file
 │
 ├── 🗂️ src/                         # Rust application source code
-│   └── 📄 main.rs                  # Main Rust application entry point
+│   ├── 📄 main.rs                  # Application entry point
+│   ├── 📄 lib.rs                   # Library root
+│   ├── 📄 api.rs                   # API routes and handlers
+│   ├── 📄 state.rs                 # Application state management
+│   ├── 🗂️ domain/                  # Domain logic and types
+│   │   ├── 📄 mod.rs               # Domain module exports
+│   │   └── 🗂️ error/               # Error handling
+│   │       ├── 📄 mod.rs           # Error module exports
+│   │       ├── 📄 app_error.rs     # Application error types
+│   │       └── 📄 http_response.rs # HTTP error responses
+│   └── 🗂️ utils/                   # Utility modules
+│       ├── 📄 mod.rs               # Utils module exports
+│       ├── 📄 config.rs            # Configuration management
+│       └── 📄 tracing.rs           # Logging and tracing setup
+│
+├── 🗂️ tests/                       # Integration tests
+│   └── 🗂️ api/                     # API integration tests
+│       ├── 📄 main.rs              # Test runner
+│       ├── 📄 helpers.rs           # Test utilities
+│       └── 📄 health.rs            # Health endpoint tests
 │
 ├── 🗂️ scripts/                     # Development and deployment scripts
 │   ├── 📄 dev-reset.sh             # Development database reset script
@@ -21,8 +40,8 @@ sovaehr/
 ├── 🗂️ supabase/                    # Supabase backend configuration
 │   ├── 📄 config.toml              # Supabase project configuration
 │   ├── 🗂️ migrations/              # Database schema migrations
-│   │   ├── 📄 20250918151818_init_core_practice_schema.sql  # Core schema setup
-│   │   └── 📄 20250918190003_add_audit_log.sql             # Audit logging system
+│   │   ├── 📄 20250918151818_init_core_practice_schema.sql  # Core schema
+│   │   └── 📄 20250918190003_add_audit_log.sql             # Audit system
 │   └── 🗂️ seeds/                   # Database seed data
 │       └── 📄 after_users.sql      # Post-user-creation seed data
 │
@@ -30,84 +49,34 @@ sovaehr/
 └── 🗂️ .vscode/                     # VS Code workspace configuration
 ```
 
-## Architecture Overview
+## Tech Stack
 
-### **Backend: Supabase (PostgreSQL + Auth + API)**
-- **Database**: PostgreSQL with Row Level Security (RLS)
-- **Authentication**: Supabase Auth with JWT tokens
-- **API**: Auto-generated REST/GraphQL APIs
-- **Real-time**: WebSocket subscriptions for live updates
+- **Backend**: Rust (API server)
+- **Database**: Supabase (PostgreSQL + Auth + Real-time)
+- **Security**: Row Level Security (RLS) + JWT authentication
+- **Testing**: Integration tests with test database
 
-### **Application: Rust**
-- **Framework**: Rust binary application
-- **Purpose**: Backend services and business logic
-- **Configuration**: Cargo-based dependency management
+## Quick Start
 
-### **Database Schema**
+1. **Setup environment**: Copy `.env.example` to `.env` and configure
+2. **Reset database**: `./scripts/dev-reset.sh`
+3. **Run server**: `cargo run`
+4. **Run tests**: `cargo test`
 
-#### Core Tables:
+## Database Schema
+
+Core tables for multi-tenant healthcare practice management:
 - `practice_roles` - Role definitions (owner, admin, clinician, etc.)
-- `practices` - Healthcare practice/organization entities
-- `practice_memberships` - User-to-practice relationships
-- `practice_membership_roles` - Role assignments per membership
-- `teams` - Practice teams for organization
-- `team_members` - Team membership tracking
-- `audit_log` - Comprehensive audit trail
+- `practices` - Healthcare practice entities
+- `practice_memberships` - User-to-practice relationships  
+- `practice_membership_roles` - Role assignments
+- `teams` - Practice teams
+- `team_members` - Team membership
+- `audit_log` - Complete audit trail
 
-#### Security Features:
-- **Row Level Security (RLS)** on all tables
-- **Hierarchical permissions**: Owners > Admins > Other roles
-- **Secure functions** with empty search paths
-- **Audit triggers** on all data mutations
+## Development
 
-### **Development Workflow**
-
-#### Environment Setup:
-1. **Environment Variables**: Configure `.env` with Supabase credentials
-2. **Database Reset**: Run `./scripts/dev-reset.sh` to reset local DB
-3. **Test Data**: Automatically creates test users and practice data
-
-#### Database Management:
-- **Migrations**: Version-controlled schema changes in `supabase/migrations/`
-- **Seeds**: Test data population in `supabase/seeds/`
-- **Local Development**: Supabase CLI for local database instance
-
-### **Key Features**
-
-#### Multi-tenant Architecture:
-- **Practice-based isolation**: All data scoped to practices
-- **Role-based access control**: Granular permissions per role
-- **Team organization**: Flexible team structures within practices
-
-#### Security & Compliance:
-- **Audit logging**: Complete trail of all data changes
-- **RLS policies**: Database-level access control
-- **JWT authentication**: Secure API access
-- **Performance optimized**: Efficient auth function calls
-
-#### Development Experience:
-- **Type safety**: Rust for backend reliability
-- **Database migrations**: Version-controlled schema evolution
-- **Automated testing**: Script-based test data setup
-- **Local development**: Full Supabase stack locally
-
-## Getting Started
-
-1. **Clone the repository**
-2. **Set up environment variables** in `.env`
-3. **Install dependencies**: Supabase CLI, Rust toolchain
-4. **Run development reset**: `./scripts/dev-reset.sh`
-5. **Start development**: Local Supabase instance will be running
-
-## Scripts
-
-- `dev-reset.sh` - Complete development environment reset
-- `test_users_init.sh` - Create test users via Supabase Admin API
-
-## Database Schema Highlights
-
-- **Secure by default**: All tables have RLS enabled
-- **Performance optimized**: Proper indexing and auth function patterns
-- **Audit compliant**: Complete change tracking
-- **Multi-role support**: Users can have multiple roles per practice
-- **Team flexibility**: Practice-based team organization
+- `./scripts/dev-reset.sh` - Reset local database with test data
+- `./scripts/test_users_init.sh` - Create test users
+- Database migrations in `supabase/migrations/`
+- All tables have RLS policies for security
