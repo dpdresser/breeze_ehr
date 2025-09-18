@@ -73,6 +73,7 @@ create table if not exists public.team_members (
 );
 
 create index if not exists idx_team_members_team on public.team_members (team_id);
+create index if not exists idx_team_members_user on public.team_members (user_id);
 create index if not exists idx_team_members_practice on public.team_members (practice_id);
 
 -- ===== RLS on all tables =====
@@ -91,7 +92,7 @@ create or replace function private.is_member_of_practice(p_practice_id uuid)
 returns boolean
 language sql
 security definer
-set search_path = public
+set search_path = ''
 as $$
   select exists (
     select 1
@@ -107,7 +108,7 @@ create or replace function private.has_role(p_practice_id uuid, p_role_code text
 returns boolean
 language sql
 security definer
-set search_path = public
+set search_path = ''
 as $$
   select exists (
     select 1
@@ -126,16 +127,50 @@ create or replace function private.is_owner_or_admin(p_practice_id uuid)
 returns boolean
 language sql
 security definer
-set search_path = public
+set search_path = ''
 as $$
   select
     private.has_role(p_practice_id, 'owner')
     or private.has_role(p_practice_id, 'admin');
 $$;
 
+-- Is current user an owner (not admin) of given practice?
+create or replace function private.is_owner(p_practice_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = ''
+as $$
+  select private.has_role(p_practice_id, 'owner');
+$$;
+
+-- Can current user manage roles for a specific membership?
+-- Owners can manage all roles, admins can manage non-owner roles
+create or replace function private.can_manage_membership_roles(p_membership_id uuid, p_target_role_code text)
+returns boolean
+language sql
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.practice_memberships m
+    where m.id = p_membership_id
+      and (
+        -- Owners can manage all roles
+        private.is_owner(m.practice_id)
+        or 
+        -- Admins can manage non-owner roles
+        (private.has_role(m.practice_id, 'admin') and p_target_role_code != 'owner')
+      )
+  );
+$$;
+
 comment on function private.is_member_of_practice is 'Checks current auth.uid() is active member of practice';
 comment on function private.has_role is 'Checks current auth.uid() has a specific role in practice';
 comment on function private.is_owner_or_admin is 'Checks current auth.uid() is owner or admin in practice';
+comment on function private.is_owner is 'Checks current auth.uid() is owner in practice';
+comment on function private.can_manage_membership_roles is 'Checks if current user can manage roles for membership (owners: all roles, admins: non-owner roles)';
 
 -- ===== POLICIES =====
 
@@ -154,12 +189,24 @@ create policy "practices_select_for_members"
   to authenticated
   using (private.is_member_of_practice(id));
 
-create policy "practices_modify_owner_admin"
+create policy "practices_insert_owner_admin"
   on public.practices
-  for all
+  for insert
+  to authenticated
+  with check (private.is_owner_or_admin(id));
+
+create policy "practices_update_owner_admin"
+  on public.practices
+  for update
   to authenticated
   using (private.is_owner_or_admin(id))
   with check (private.is_owner_or_admin(id));
+
+create policy "practices_delete_owner_admin"
+  on public.practices
+  for delete
+  to authenticated
+  using (private.is_owner_or_admin(id));
 
 -- Memberships: user can read their rows; owner/admin can manage within same practice
 create policy "memberships_select_self_or_admin"
@@ -171,14 +218,48 @@ create policy "memberships_select_self_or_admin"
     or private.is_owner_or_admin(practice_id)
   );
 
-create policy "memberships_modify_owner_admin"
+create policy "memberships_insert_owner_admin"
   on public.practice_memberships
-  for all
+  for insert
   to authenticated
-  using (private.is_owner_or_admin(practice_id))
   with check (private.is_owner_or_admin(practice_id));
 
--- Membership roles: visible to members of the practice; writable by owner/admin
+create policy "memberships_update_owner_admin"
+  on public.practice_memberships
+  for update
+  to authenticated
+  using (
+    -- Can only update if not targeting an owner membership, unless you're an owner
+    private.is_owner(practice_id)
+    or (
+      private.has_role(practice_id, 'admin')
+      and not exists (
+        select 1 from public.practice_membership_roles mr
+        join public.practice_roles r on r.id = mr.role_id
+        where mr.membership_id = public.practice_memberships.id and r.code = 'owner'
+      )
+    )
+  )
+  with check (private.is_owner_or_admin(practice_id));
+
+create policy "memberships_delete_owner_admin"
+  on public.practice_memberships
+  for delete
+  to authenticated
+  using (
+    -- Can only delete if not targeting an owner membership, unless you're an owner
+    private.is_owner(practice_id)
+    or (
+      private.has_role(practice_id, 'admin')
+      and not exists (
+        select 1 from public.practice_membership_roles mr
+        join public.practice_roles r on r.id = mr.role_id
+        where mr.membership_id = public.practice_memberships.id and r.code = 'owner'
+      )
+    )
+  );
+
+-- Membership roles: visible to members of the practice; writable by owner/admin with restrictions
 create policy "mroles_select_for_members"
   on public.practice_membership_roles
   for select
@@ -192,24 +273,54 @@ create policy "mroles_select_for_members"
     )
   );
 
-create policy "mroles_modify_owner_admin"
+create policy "mroles_insert_owner_admin"
   on public.practice_membership_roles
-  for all
+  for insert
+  to authenticated
+  with check (
+    exists (
+      select 1
+      from public.practice_memberships m
+      join public.practice_roles r on r.id = role_id
+      where m.id = membership_id
+        and private.can_manage_membership_roles(membership_id, r.code)
+    )
+  );
+
+create policy "mroles_update_owner_admin"
+  on public.practice_membership_roles
+  for update
   to authenticated
   using (
     exists (
       select 1
       from public.practice_memberships m
+      join public.practice_roles r on r.id = role_id
       where m.id = membership_id
-        and private.is_owner_or_admin(m.practice_id)
+        and private.can_manage_membership_roles(membership_id, r.code)
     )
   )
   with check (
     exists (
       select 1
       from public.practice_memberships m
+      join public.practice_roles r on r.id = role_id
       where m.id = membership_id
-        and private.is_owner_or_admin(m.practice_id)
+        and private.can_manage_membership_roles(membership_id, r.code)
+    )
+  );
+
+create policy "mroles_delete_owner_admin"
+  on public.practice_membership_roles
+  for delete
+  to authenticated
+  using (
+    exists (
+      select 1
+      from public.practice_memberships m
+      join public.practice_roles r on r.id = role_id
+      where m.id = membership_id
+        and private.can_manage_membership_roles(membership_id, r.code)
     )
   );
 
@@ -220,12 +331,24 @@ create policy "teams_select_for_members"
   to authenticated
   using (private.is_member_of_practice(practice_id));
 
-create policy "teams_modify_owner_admin"
+create policy "teams_insert_owner_admin"
   on public.teams
-  for all
+  for insert
+  to authenticated
+  with check (private.is_owner_or_admin(practice_id));
+
+create policy "teams_update_owner_admin"
+  on public.teams
+  for update
   to authenticated
   using (private.is_owner_or_admin(practice_id))
   with check (private.is_owner_or_admin(practice_id));
+
+create policy "teams_delete_owner_admin"
+  on public.teams
+  for delete
+  to authenticated
+  using (private.is_owner_or_admin(practice_id));
 
 -- Team members: members can read; owner/admin can write
 create policy "team_members_select_for_members"
@@ -234,9 +357,21 @@ create policy "team_members_select_for_members"
   to authenticated
   using (private.is_member_of_practice(practice_id));
 
-create policy "team_members_modify_owner_admin"
+create policy "team_members_insert_owner_admin"
   on public.team_members
-  for all
+  for insert
+  to authenticated
+  with check (private.is_owner_or_admin(practice_id));
+
+create policy "team_members_update_owner_admin"
+  on public.team_members
+  for update
   to authenticated
   using (private.is_owner_or_admin(practice_id))
   with check (private.is_owner_or_admin(practice_id));
+
+create policy "team_members_delete_owner_admin"
+  on public.team_members
+  for delete
+  to authenticated
+  using (private.is_owner_or_admin(practice_id));
