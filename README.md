@@ -1,2 +1,2 @@
-# lgr_ehr_new
-MVP of EHR SaaS Product
+# sovaehr
+MVP of SovaEHR SaaS Product
