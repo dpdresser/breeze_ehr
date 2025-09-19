@@ -54,6 +54,17 @@ impl AppHttpResponse {
                     &ae.to_string(),
                     request_id,
                 )),
+                AuthError::DeleteUserError(msg) => AppHttpResponse::InternalServerError(
+                    Self::body("delete_user_error", &msg, request_id),
+                ),
+                AuthError::RetrieveUserIdError(msg) => AppHttpResponse::InternalServerError(
+                    Self::body("retrieve_user_id_error", &msg, request_id),
+                ),
+                AuthError::UserNotFound => AppHttpResponse::NotFound(Self::body(
+                    "user_not_found",
+                    &ae.to_string(),
+                    request_id,
+                )),
                 AuthError::MissingToken => AppHttpResponse::Unauthorized(Self::body(
                     "missing_token",
                     &ae.to_string(),

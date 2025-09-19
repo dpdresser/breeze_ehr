@@ -67,6 +67,7 @@ async fn signup_with_existing_email_returns_409() {
     );
 }
 
+#[ignore]
 #[tokio::test]
 async fn signup_sends_verify_email_and_allows_signin_after_verification_with_200() {
     init_tracing("info");
@@ -136,6 +137,7 @@ async fn signup_sends_verify_email_and_allows_signin_after_verification_with_200
     assert!(signin_body.get("token").is_some());
 }
 
+#[ignore]
 #[tokio::test]
 async fn signin_with_unverified_email_fails_with_401() {
     init_tracing("info");

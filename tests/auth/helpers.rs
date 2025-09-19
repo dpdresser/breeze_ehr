@@ -35,6 +35,29 @@ impl TestApp {
             .expect("Failed to execute request.")
     }
 
+    pub async fn delete_user(&self, user_id: &str) -> reqwest::Response {
+        let request_body = json!({ "user_id": user_id });
+        self.http_client
+            .delete(&format!("http://{}/api/auth/delete_user", &self.address))
+            .json(&request_body)
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+
+    pub async fn post_retrieve_user_id(&self, email: &str) -> reqwest::Response {
+        let request_body = json!({ "email": email });
+        self.http_client
+            .post(&format!(
+                "http://{}/api/auth/retrieve_user_id",
+                &self.address
+            ))
+            .json(&request_body)
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+
     pub async fn post_signin(&self, email: &str, password: &str) -> reqwest::Response {
         let request_body = json!({ "email": email, "password": password });
         self.http_client
