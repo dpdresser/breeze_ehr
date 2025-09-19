@@ -1,12 +1,19 @@
+use std::sync::Arc;
+
 use poem::{EndpointExt, Route, Server, listener::TcpListener, middleware::Tracing};
 use poem_openapi::OpenApiService;
+use tokio::sync::RwLock;
 
 use crate::{
-    api::AppApi, domain::error::app_error::AppResult, state::AppState, utils::config::AppConfig,
+    api::AppApi, domain::error::app_error::AppResult,
+    services::supabase_auth_service::SupabaseAuthService, state::AppState,
+    utils::config::AppConfig,
 };
 
 pub mod api;
 pub mod domain;
+pub mod routes;
+pub mod services;
 pub mod state;
 pub mod utils;
 
@@ -17,7 +24,11 @@ pub struct App {
 
 impl App {
     pub fn new(config: AppConfig) -> Self {
-        let state = AppState::new();
+        let auth_service = Arc::new(RwLock::new(SupabaseAuthService::new(
+            &config.supabase_url,
+            &config.supabase_key,
+        )));
+        let state = AppState::new(auth_service);
         App { config, state }
     }
 
@@ -29,7 +40,8 @@ impl App {
         let app = Route::new()
             .nest("/api", api_service)
             .nest("/docs", ui)
-            .with(Tracing);
+            .with(Tracing)
+            .data(self.state.clone());
 
         let listener = TcpListener::bind(&self.config.app_address);
         Server::new(listener)

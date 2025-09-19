@@ -1,29 +1,37 @@
 use poem::{FromRequest, Request, RequestBody};
+use std::sync::Once;
 use tracing_appender::non_blocking;
 use tracing_error::ErrorLayer;
 use tracing_subscriber::{EnvFilter, fmt, layer::SubscriberExt, registry, util::SubscriberInitExt};
 
+static INIT: Once = Once::new();
+
 pub fn init_tracing(log_level: &str) {
-    color_eyre::install().expect("Failed to install color_eyre");
+    INIT.call_once(|| {
+        // Only install color_eyre once
+        if color_eyre::install().is_err() {
+            // Already installed, ignore the error
+        }
 
-    let (non_blocking, _guard) = non_blocking(std::io::stdout());
+        let (non_blocking, _guard) = non_blocking(std::io::stdout());
 
-    registry()
-        .with(
-            fmt::layer()
-                .with_writer(non_blocking)
-                .with_thread_ids(true)
-                .with_thread_names(true)
-                .with_target(false)
-                .with_level(true)
-                .with_file(true)
-                .with_line_number(true),
-        )
-        .with(EnvFilter::new(log_level))
-        .with(ErrorLayer::default())
-        .init();
+        registry()
+            .with(
+                fmt::layer()
+                    .with_writer(non_blocking)
+                    .with_thread_ids(true)
+                    .with_thread_names(true)
+                    .with_target(false)
+                    .with_level(true)
+                    .with_file(true)
+                    .with_line_number(true),
+            )
+            .with(EnvFilter::new(log_level))
+            .with(ErrorLayer::default())
+            .init();
 
-    std::mem::forget(_guard);
+        std::mem::forget(_guard);
+    });
 }
 
 #[derive(Clone)]

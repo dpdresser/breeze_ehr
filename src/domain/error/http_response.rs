@@ -2,7 +2,7 @@ use poem_openapi::{ApiResponse, Object, payload::Json};
 use serde::Serialize;
 use serde_json::Value;
 
-use crate::domain::error::app_error::AppError;
+use crate::domain::error::app_error::{AppError, AuthError, ValidationError};
 
 #[derive(Object, Serialize, Debug)]
 pub struct ErrorBody {
@@ -42,28 +42,42 @@ impl AppHttpResponse {
 
     pub fn from_app_error(error: AppError, request_id: &str) -> Self {
         match error {
+            AppError::Auth(ae) => match ae {
+                AuthError::SignInError(msg) => {
+                    AppHttpResponse::Unauthorized(Self::body("sign_in_error", &msg, request_id))
+                }
+                AuthError::MissingToken => AppHttpResponse::Unauthorized(Self::body(
+                    "missing_token",
+                    &ae.to_string(),
+                    request_id,
+                )),
+                AuthError::InvalidToken => AppHttpResponse::Unauthorized(Self::body(
+                    "invalid_token",
+                    &ae.to_string(),
+                    request_id,
+                )),
+                AuthError::ExpiredToken => AppHttpResponse::Unauthorized(Self::body(
+                    "expired_token",
+                    &ae.to_string(),
+                    request_id,
+                )),
+            },
             AppError::Validation(ve) => match ve {
-                crate::domain::error::app_error::ValidationError::InvalidEmail => {
-                    AppHttpResponse::BadRequest(Self::body(
-                        "invalid_email",
-                        &ve.to_string(),
-                        request_id,
-                    ))
-                }
-                crate::domain::error::app_error::ValidationError::WeakPassword => {
-                    AppHttpResponse::BadRequest(Self::body(
-                        "weak_password",
-                        &ve.to_string(),
-                        request_id,
-                    ))
-                }
-                crate::domain::error::app_error::ValidationError::InvalidInput(_) => {
-                    AppHttpResponse::BadRequest(Self::body(
-                        "invalid_input",
-                        &ve.to_string(),
-                        request_id,
-                    ))
-                }
+                ValidationError::InvalidEmail => AppHttpResponse::BadRequest(Self::body(
+                    "invalid_email",
+                    &ve.to_string(),
+                    request_id,
+                )),
+                ValidationError::WeakPassword => AppHttpResponse::BadRequest(Self::body(
+                    "weak_password",
+                    &ve.to_string(),
+                    request_id,
+                )),
+                ValidationError::InvalidInput(_) => AppHttpResponse::BadRequest(Self::body(
+                    "invalid_input",
+                    &ve.to_string(),
+                    request_id,
+                )),
             },
             AppError::Internal { .. } => AppHttpResponse::InternalServerError(Self::body(
                 "internal_server_error",

@@ -3,6 +3,18 @@ use thiserror::Error;
 use tracing_error::SpanTrace;
 
 #[derive(Debug, Error)]
+pub enum AuthError {
+    #[error("Sign-in failed")]
+    SignInError(String),
+    #[error("Missing token")]
+    MissingToken,
+    #[error("Invalid token")]
+    InvalidToken,
+    #[error("Token expired")]
+    ExpiredToken,
+}
+
+#[derive(Debug, Error)]
 pub enum ValidationError {
     #[error("Invalid email format")]
     InvalidEmail,
@@ -14,6 +26,8 @@ pub enum ValidationError {
 
 #[derive(Debug, Error)]
 pub enum AppError {
+    #[error(transparent)]
+    Auth(#[from] AuthError),
     #[error(transparent)]
     Validation(#[from] ValidationError),
     #[error("Internal server error")]

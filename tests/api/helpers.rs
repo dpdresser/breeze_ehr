@@ -29,4 +29,14 @@ impl TestApp {
             .await
             .expect("Failed to execute request.")
     }
+
+    pub async fn post_signin(&self, email: &str, password: &str) -> reqwest::Response {
+        let request_body = serde_json::json!({ "email": email, "password": password });
+        self.http_client
+            .post(&format!("http://{}/api/auth/signin", &self.address))
+            .json(&request_body)
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
 }

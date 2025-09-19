@@ -1,0 +1,3 @@
+﻿Date,Time Est (Hrs),Description
+prior,25,"initial project setup, research and prototyping, basic project structure and config, initial domain models and interfaces, logging and error handling, tracing setup"
+9/18/25,6,"database migrations and test data initialization, app backend api framework with server, api structure and docs, health check route, integration test framework, start on auth service integration"

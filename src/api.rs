@@ -1,6 +1,12 @@
-use poem_openapi::OpenApi;
+use poem::web::Data;
+use poem_openapi::{OpenApi, payload::Json};
 
-use crate::{domain::error::http_response::AppHttpResponse, utils::tracing::RequestContext};
+use crate::{
+    domain::error::http_response::AppHttpResponse,
+    routes::signin::{SigninRequest, signin_handler},
+    state::AppState,
+    utils::tracing::RequestContext,
+};
 
 #[derive(Debug)]
 pub struct AppApi;
@@ -13,5 +19,21 @@ impl AppApi {
         AppHttpResponse::Ok(poem_openapi::payload::Json(
             serde_json::json!({"status": "ok"}),
         ))
+    }
+
+    #[oai(path = "/auth/signin", method = "post")]
+    #[tracing::instrument(name = "signin", skip_all, fields(req_id=%ctx.request_id))]
+    async fn signin(
+        &self,
+        ctx: RequestContext,
+        state: Data<&AppState>,
+        payload: Json<SigninRequest>,
+    ) -> AppHttpResponse {
+        match signin_handler(state, payload).await {
+            Ok(response) => {
+                AppHttpResponse::Ok(Json(serde_json::json!({ "token": response.token })))
+            }
+            Err(e) => AppHttpResponse::from_app_error(e, &ctx.request_id),
+        }
     }
 }
