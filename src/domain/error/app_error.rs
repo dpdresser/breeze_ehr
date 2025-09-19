@@ -4,8 +4,12 @@ use tracing_error::SpanTrace;
 
 #[derive(Debug, Error)]
 pub enum AuthError {
-    #[error("Sign-in failed")]
+    #[error("Sign-in failed: {0}")]
     SignInError(String),
+    #[error("Sign-up failed: {0}")]
+    SignUpError(String),
+    #[error("Email already in use")]
+    EmailAlreadyInUse,
     #[error("Missing token")]
     MissingToken,
     #[error("Invalid token")]

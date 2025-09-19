@@ -28,7 +28,7 @@ impl App {
             &config.supabase_url,
             &config.supabase_key,
         )));
-        let state = AppState::new(auth_service);
+        let state = AppState::new(auth_service, config.email_confirm_redirect.clone());
         App { config, state }
     }
 

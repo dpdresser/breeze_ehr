@@ -4,6 +4,8 @@ pub struct AppConfig {
     pub log_level: String,
     pub supabase_url: String,
     pub supabase_key: String,
+    pub mailpit_url: String,
+    pub email_confirm_redirect: Option<String>,
 }
 
 impl AppConfig {
@@ -20,11 +22,17 @@ impl AppConfig {
         let supabase_key =
             std::env::var("SUPABASE_ANON_KEY").expect("SUPABASE_ANON_KEY must be set");
 
+        let mailpit_url =
+            std::env::var("MAILPIT_URL").unwrap_or_else(|_| "http://127.0.0.1:54324".to_string());
+        let email_confirm_redirect = std::env::var("SIGNUP_CONFIRM_REDIRECT").ok();
+
         AppConfig {
             app_address,
             log_level,
             supabase_url,
             supabase_key,
+            mailpit_url,
+            email_confirm_redirect,
         }
     }
 
@@ -44,11 +52,17 @@ impl AppConfig {
         let supabase_key =
             std::env::var("SUPABASE_ANON_KEY").expect("SUPABASE_ANON_KEY must be set");
 
+        let mailpit_url =
+            std::env::var("MAILPIT_URL").unwrap_or_else(|_| "http://127.0.0.1:54324".to_string());
+        let email_confirm_redirect = std::env::var("SIGNUP_CONFIRM_REDIRECT").ok();
+
         AppConfig {
             app_address,
             log_level,
             supabase_url,
             supabase_key,
+            mailpit_url,
+            email_confirm_redirect,
         }
     }
 }
