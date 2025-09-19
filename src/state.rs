@@ -9,10 +9,14 @@ type AuthServiceType = Arc<RwLock<dyn AuthService + Send + Sync>>;
 #[derive(Clone)]
 pub struct AppState {
     pub auth_service: AuthServiceType,
+    pub email_confirm_redirect: Option<String>,
 }
 
 impl AppState {
-    pub fn new(auth_service: AuthServiceType) -> Self {
-        AppState { auth_service }
+    pub fn new(auth_service: AuthServiceType, email_confirm_redirect: Option<String>) -> Self {
+        AppState {
+            auth_service,
+            email_confirm_redirect,
+        }
     }
 }

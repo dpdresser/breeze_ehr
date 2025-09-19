@@ -10,29 +10,37 @@ use crate::{
 };
 
 #[derive(Object, Debug)]
-pub struct SigninRequest {
+pub struct SignupRequest {
     pub email: String,
     pub password: String,
+    pub redirect_to: Option<String>,
 }
 
 #[derive(Object, Debug)]
-pub struct SigninResponse {
-    pub token: String,
+pub struct SignupResponse {
+    pub message: String,
 }
 
-pub async fn signin_handler(
+pub async fn signup_handler(
     state: Data<&AppState>,
-    payload: Json<SigninRequest>,
-) -> AppResult<SigninResponse> {
+    payload: Json<SignupRequest>,
+) -> AppResult<SignupResponse> {
     let email = Email::new(payload.email.clone())?;
     let password = Password::new(payload.password.clone())?;
 
-    let token = state
+    let redirect = payload
+        .redirect_to
+        .clone()
+        .or_else(|| state.email_confirm_redirect.clone());
+
+    state
         .auth_service
         .read()
         .await
-        .signin(&email, &password)
+        .signup(&email, &password, redirect.as_deref())
         .await?;
 
-    Ok(SigninResponse { token })
+    Ok(SignupResponse {
+        message: "Signup successful, please check your email to confirm.".to_string(),
+    })
 }

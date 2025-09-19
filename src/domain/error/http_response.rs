@@ -46,6 +46,14 @@ impl AppHttpResponse {
                 AuthError::SignInError(msg) => {
                     AppHttpResponse::Unauthorized(Self::body("sign_in_error", &msg, request_id))
                 }
+                AuthError::SignUpError(msg) => {
+                    AppHttpResponse::BadRequest(Self::body("sign_up_error", &msg, request_id))
+                }
+                AuthError::EmailAlreadyInUse => AppHttpResponse::Conflict(Self::body(
+                    "email_already_in_use",
+                    &ae.to_string(),
+                    request_id,
+                )),
                 AuthError::MissingToken => AppHttpResponse::Unauthorized(Self::body(
                     "missing_token",
                     &ae.to_string(),
