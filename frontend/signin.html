@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SovaEHR • Sign in</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="./dist/output.css" />
+  </head>
+  <body class="h-full bg-gradient-to-br from-seafoam-light via-white to-seafoam-dark text-terra-dark">
+    <div class="flex min-h-screen flex-col">
+      <header class="mx-auto w-full max-w-4xl px-6 py-8">
+        <a href="/" class="flex items-center gap-3 text-lg font-semibold text-terra-dark">
+          <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-terra-dark text-seafoam-light">SE</span>
+          <span>SovaEHR</span>
+        </a>
+      </header>
+
+      <main class="flex flex-1 items-center justify-center px-6 pb-16">
+        <div class="w-full max-w-md space-y-8 rounded-3xl bg-white/80 p-10 shadow-xl backdrop-blur">
+          <header class="space-y-2 text-center">
+            <h1 class="text-3xl font-semibold">Welcome back</h1>
+            <p class="text-sm text-terra-light">Access your practice workspace with your credentials.</p>
+          </header>
+
+          <form id="signin-form" class="space-y-6" novalidate>
+            <div class="space-y-2">
+              <label for="signin-email" class="block text-sm font-medium">Work email</label>
+              <input
+                id="signin-email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                required
+                class="w-full rounded-lg border border-seafoam-dark/30 bg-white px-4 py-3 text-sm shadow-sm focus:border-terra-dark focus:outline-none focus:ring-2 focus:ring-terra-dark/40"
+                placeholder="you@practice.com"
+              />
+              <p data-error="email" class="hidden text-xs text-red-600"></p>
+            </div>
+
+            <div class="space-y-2">
+              <label for="signin-password" class="block text-sm font-medium">Password</label>
+              <input
+                id="signin-password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                required
+                class="w-full rounded-lg border border-seafoam-dark/30 bg-white px-4 py-3 text-sm shadow-sm focus:border-terra-dark focus:outline-none focus:ring-2 focus:ring-terra-dark/40"
+                placeholder="••••••••"
+              />
+              <p data-error="password" class="hidden text-xs text-red-600"></p>
+            </div>
+
+            <div class="flex items-center justify-between text-xs text-terra-light">
+              <label class="inline-flex items-center gap-2">
+                <input type="checkbox" name="remember" class="h-4 w-4 rounded border-seafoam-dark/40 text-terra-dark focus:ring-terra-dark/50" />
+                <span>Remember this device</span>
+              </label>
+              <a href="#forgot" class="font-medium text-terra-dark underline-offset-4 hover:underline">Forgot password?</a>
+            </div>
+
+            <button
+              type="submit"
+              class="flex w-full items-center justify-center gap-2 rounded-lg bg-terra-dark px-4 py-3 text-sm font-semibold text-seafoam-light transition hover:bg-terra-light focus:outline-none focus-visible:ring-2 focus-visible:ring-terra-dark/50"
+            >
+              <span>Sign in</span>
+            </button>
+          </form>
+
+          <footer class="text-center text-sm text-terra-light">
+            New to SovaEHR?
+            <a href="/signup" class="font-medium text-terra-dark underline-offset-4 hover:underline">Create an account</a>
+          </footer>
+        </div>
+      </main>
+    </div>
+    <script type="module" src="./src/signin.js"></script>
+  </body>
+</html>

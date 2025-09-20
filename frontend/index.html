@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SovaEHR Frontend</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="./dist/output.css" />
+  </head>
+  <body class="h-full">
+    <main class="min-h-screen bg-gradient-to-br from-seafoam-light via-white to-seafoam-dark text-terra-dark">
+      <section class="mx-auto flex min-h-screen max-w-5xl flex-col gap-16 px-6 py-16">
+        <header class="flex items-center justify-between">
+          <div class="flex items-center gap-3 text-xl font-semibold">
+            <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-terra-dark text-seafoam-light">SE</span>
+            <span>SovaEHR</span>
+          </div>
+          <nav class="flex gap-6 text-sm font-medium">
+            <a href="#features">Features</a>
+            <a href="#workflow">Workflow</a>
+            <a href="#contact">Contact</a>
+            <a href="/signin" class="text-terra-dark/80 transition hover:text-terra-dark">Sign in</a>
+            <a href="/signup" class="rounded-full border border-terra-dark px-3 py-1 transition hover:bg-terra-dark hover:text-seafoam-light">Sign up</a>
+          </nav>
+        </header>
+
+        <div class="grid gap-12 lg:grid-cols-[1.25fr_1fr]">
+          <div class="space-y-8">
+            <h1 class="text-4xl font-bold tracking-tight sm:text-5xl">Modern practice management that keeps clinicians in flow</h1>
+            <p class="text-lg text-terra-light">Streamline patient intake, charting, and billing without wrestling with legacy systems. Built for behavioral health teams who value clarity and speed.</p>
+            <div class="flex flex-wrap gap-4">
+              <a class="rounded-lg bg-terra-dark px-6 py-3 text-sm font-semibold text-seafoam-light shadow-lg shadow-terra-dark/20 transition hover:bg-terra-light hover:text-white" href="/signup">Get started</a>
+              <a class="rounded-lg border border-transparent px-6 py-3 text-sm font-semibold text-terra-dark transition hover:text-terra-light" href="/signin">I'm already a customer</a>
+              <button class="rounded-lg border border-terra-dark px-6 py-3 text-sm font-semibold text-terra-dark transition hover:bg-terra-dark hover:text-seafoam-light" data-action="request-demo">Request a demo</button>
+              <button class="rounded-lg border border-terra-dark px-6 py-3 text-sm font-semibold text-terra-dark transition hover:bg-terra-dark hover:text-seafoam-light" data-action="explore">Explore features</button>
+            </div>
+            <dl id="workflow" class="grid gap-6 sm:grid-cols-2">
+              <div class="rounded-xl bg-white/60 p-6 shadow-sm backdrop-blur">
+                <dt class="text-sm font-semibold uppercase tracking-wide text-terra-dark/80">Automated Intake</dt>
+                <dd class="mt-2 text-sm text-terra-dark/80">Smart forms and reminders keep patients on track before they ever step foot in your office.</dd>
+              </div>
+              <div class="rounded-xl bg-white/60 p-6 shadow-sm backdrop-blur">
+                <dt class="text-sm font-semibold uppercase tracking-wide text-terra-dark/80">Charting Templates</dt>
+                <dd class="mt-2 text-sm text-terra-dark/80">Reusable SOAP notes and outcome measures that support your team’s preferred workflow.</dd>
+              </div>
+            </dl>
+          </div>
+
+          <aside class="rounded-3xl bg-white/70 p-8 shadow-xl backdrop-blur">
+            <h2 id="features" class="text-xl font-semibold text-terra-dark">Today’s Appointments</h2>
+            <ul class="mt-6 space-y-4" data-appointments></ul>
+            <footer id="contact" class="mt-8 text-xs text-terra-light">Need something bespoke? Email <a class="underline" href="mailto:hello@sovaehr.com">hello@sovaehr.com</a>.</footer>
+          </aside>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

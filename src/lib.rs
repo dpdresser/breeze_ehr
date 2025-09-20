@@ -12,6 +12,7 @@ use crate::{
 
 pub mod api;
 pub mod domain;
+pub mod frontend;
 pub mod routes;
 pub mod services;
 pub mod state;
@@ -45,6 +46,7 @@ impl App {
         let app = Route::new()
             .nest("/api", api_service)
             .nest("/docs", ui)
+            .nest("/", frontend::build_frontend_routes())
             .with(Tracing)
             .data(self.state.clone());
 
