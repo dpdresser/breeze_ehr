@@ -79,7 +79,7 @@ impl AuthService for SupabaseAuthService {
                 AuthError::RetrieveUserIdError(format!("Failed to build request URL: {e}"))
             })?;
         url.query_pairs_mut()
-            .append_pair("email", email.as_ref().expose_secret());
+            .append_pair("email", &format!("eq.{}", email.as_ref().expose_secret()));
 
         let resp = self
             .client
@@ -132,14 +132,25 @@ impl AuthService for SupabaseAuthService {
 
         if users.len() > 1 {
             tracing::warn!(
-                "Multiple users found with email {}. Returning the first one.",
+                "Multiple users found with email {}, filtering by exact match",
                 email.as_ref().expose_secret()
             );
         }
 
-        let user_id = users
-            .first()
-            .and_then(|user| user.get("id"))
+        let matching_user = users.iter().find(|user| {
+            user.get("email")
+                .and_then(|v| v.as_str())
+                .map(|e| e.eq_ignore_ascii_case(email.as_ref().expose_secret()))
+                .unwrap_or(false)
+        });
+
+        let matching_user = match matching_user {
+            Some(user) => user,
+            None => return Err(AuthError::UserNotFound.into()),
+        };
+
+        let user_id = matching_user
+            .get("id")
             .and_then(|v| v.as_str())
             .ok_or_else(|| {
                 AuthError::RetrieveUserIdError("User ID not found in response".to_string())
