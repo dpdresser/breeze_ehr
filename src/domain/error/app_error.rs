@@ -6,6 +6,8 @@ use tracing_error::SpanTrace;
 pub enum AuthError {
     #[error("Sign-in failed: {0}")]
     SignInError(String),
+    #[error("Failed to sign out: {0}")]
+    SignOutError(String),
     #[error("Sign-up failed: {0}")]
     SignUpError(String),
     #[error("Email already in use")]

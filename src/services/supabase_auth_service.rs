@@ -203,7 +203,7 @@ impl AuthService for SupabaseAuthService {
             .header("Content-Type", "application/json")
             .send()
             .await
-            .map_err(|e| AuthError::SignInError(format!("Failed to send request: {e}")))?;
+            .map_err(|e| AuthError::SignOutError(format!("Failed to send request: {e}")))?;
 
         let status = resp.status();
 
@@ -213,14 +213,14 @@ impl AuthService for SupabaseAuthService {
             let resp_json: serde_json::Value = resp
                 .json()
                 .await
-                .map_err(|e| AuthError::SignInError(format!("Failed to parse response: {e}")))?;
+                .map_err(|e| AuthError::SignOutError(format!("Failed to parse response: {e}")))?;
 
             let message = Self::error_message(&resp_json).unwrap_or("Logout failed");
 
-            Err(
-                AuthError::SignInError(format!("Failed to logout with status {status}: {message}"))
-                    .into(),
-            )
+            Err(AuthError::SignOutError(format!(
+                "Failed to logout with status {status}: {message}"
+            ))
+            .into())
         }
     }
 
