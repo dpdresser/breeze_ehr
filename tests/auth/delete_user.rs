@@ -1,8 +1,7 @@
-use reqwest::redirect::Policy;
 use sovaehr::utils::tracing::init_tracing;
 use uuid::Uuid;
 
-use crate::helpers::{TestApp, find_link_in_html};
+use crate::helpers::TestApp;
 
 #[tokio::test]
 async fn delete_user_returns_200() {
@@ -17,41 +16,10 @@ async fn delete_user_returns_200() {
     let signup_response = app.post_signup(&email, password, None).await;
     assert_eq!(signup_response.status().as_u16(), 201);
 
-    let message_response = app
-        .poll_mailpit_messages(&email)
-        .await
-        .unwrap_or_else(|| {
-            panic!(
-                "No verification email found for {email}. Ensure Supabase email confirmations are enabled."
-            )
-        });
-    let message_body: serde_json::Value = message_response
-        .json()
-        .await
-        .expect("Failed to parse Mailpit message response");
+    let verification_url = app.verification_link(&email).await;
 
-    let extract_link = |field: &str| -> Option<String> {
-        let value = message_body.get(field)?;
-        if let Some(content) = value.as_str() {
-            return find_link_in_html(content);
-        }
-
-        value
-            .get("Body")
-            .and_then(|body| body.as_str())
-            .and_then(find_link_in_html)
-    };
-
-    let verification_url = extract_link("HTML")
-        .or_else(|| extract_link("Text"))
-        .expect("No verification link found in email");
-
-    let verification_client = reqwest::Client::builder()
-        .redirect(Policy::none())
-        .build()
-        .expect("Failed to build verification client");
-
-    let verify_response = verification_client
+    let verify_response = app
+        .http_client
         .get(&verification_url)
         .send()
         .await
