@@ -29,6 +29,15 @@ impl SupabaseAuthService {
             supabase_service_role_key,
         }
     }
+
+    fn error_message(value: &Value) -> Option<&str> {
+        value
+            .get("msg")
+            .or_else(|| value.get("message"))
+            .or_else(|| value.get("error_description"))
+            .or_else(|| value.get("error"))
+            .and_then(|v| v.as_str())
+    }
 }
 
 #[async_trait::async_trait]
@@ -58,13 +67,7 @@ impl AuthService for SupabaseAuthService {
                 AuthError::DeleteUserError(format!("Failed to parse response: {e}"))
             })?;
 
-            let message = resp_json
-                .get("msg")
-                .or_else(|| resp_json.get("message"))
-                .or_else(|| resp_json.get("error_description"))
-                .or_else(|| resp_json.get("error"))
-                .and_then(|v| v.as_str())
-                .unwrap_or("Delete user failed");
+            let message = Self::error_message(&resp_json).unwrap_or("Delete user failed");
 
             Err(AuthError::DeleteUserError(format!(
                 "Failed to delete user with status {status}: {message}"
@@ -101,13 +104,7 @@ impl AuthService for SupabaseAuthService {
         })?;
 
         if !status.is_success() {
-            let message = resp_json
-                .get("msg")
-                .or_else(|| resp_json.get("message"))
-                .or_else(|| resp_json.get("error_description"))
-                .or_else(|| resp_json.get("error"))
-                .and_then(|v| v.as_str())
-                .unwrap_or("Retrieve user ID failed");
+            let message = Self::error_message(&resp_json).unwrap_or("Retrieve user ID failed");
 
             return Err(AuthError::RetrieveUserIdError(format!(
                 "Failed to retrieve user ID with status {status}: {message}"
@@ -183,13 +180,7 @@ impl AuthService for SupabaseAuthService {
             .map_err(|e| AuthError::SignInError(format!("Failed to parse response: {e}")))?;
 
         if !status.is_success() {
-            let message = resp_json
-                .get("msg")
-                .or_else(|| resp_json.get("message"))
-                .or_else(|| resp_json.get("error_description"))
-                .or_else(|| resp_json.get("error"))
-                .and_then(|v| v.as_str())
-                .unwrap_or("Sign-in failed");
+            let message = Self::error_message(&resp_json).unwrap_or("Sign-in failed");
 
             return Err(AuthError::SignInError(message.to_string()).into());
         }
@@ -198,6 +189,38 @@ impl AuthService for SupabaseAuthService {
             Ok(token.to_string())
         } else {
             Err(AuthError::SignInError("No access token in response".to_string()).into())
+        }
+    }
+
+    async fn signout(&self, token: &str) -> AppResult<()> {
+        let url = format!("{}/auth/v1/logout", self.supabase_url);
+
+        let resp = self
+            .client
+            .post(&url)
+            .header("apikey", self.supabase_anon_key.expose_secret())
+            .header("Authorization", format!("Bearer {token}"))
+            .header("Content-Type", "application/json")
+            .send()
+            .await
+            .map_err(|e| AuthError::SignOutError(format!("Failed to send request: {e}")))?;
+
+        let status = resp.status();
+
+        if status.is_success() {
+            Ok(())
+        } else {
+            let resp_json: serde_json::Value = resp
+                .json()
+                .await
+                .map_err(|e| AuthError::SignOutError(format!("Failed to parse response: {e}")))?;
+
+            let message = Self::error_message(&resp_json).unwrap_or("Logout failed");
+
+            Err(AuthError::SignOutError(format!(
+                "Failed to logout with status {status}: {message}"
+            ))
+            .into())
         }
     }
 
@@ -236,12 +259,7 @@ impl AuthService for SupabaseAuthService {
             Value::Null
         });
 
-        let message_opt = body
-            .get("msg")
-            .or_else(|| body.get("message"))
-            .or_else(|| body.get("error_description"))
-            .or_else(|| body.get("error"))
-            .and_then(|v| v.as_str());
+        let message_opt = Self::error_message(&body);
 
         let error_code = body.get("error_code").and_then(|v| v.as_str());
 

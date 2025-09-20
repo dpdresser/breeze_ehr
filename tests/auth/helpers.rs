@@ -75,6 +75,15 @@ impl TestApp {
             .expect("Failed to execute request.")
     }
 
+    pub async fn post_signout(&self, token: &str) -> reqwest::Response {
+        self.http_client
+            .post(&format!("http://{}/api/auth/signout", &self.address))
+            .bearer_auth(token)
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+
     pub async fn post_signup(
         &self,
         email: &str,

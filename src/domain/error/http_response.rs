@@ -46,6 +46,9 @@ impl AppHttpResponse {
                 AuthError::SignInError(msg) => {
                     AppHttpResponse::Unauthorized(Self::body("sign_in_error", &msg, request_id))
                 }
+                AuthError::SignOutError(msg) => {
+                    AppHttpResponse::Unauthorized(Self::body("sign_out_error", &msg, request_id))
+                }
                 AuthError::SignUpError(msg) => {
                     AppHttpResponse::BadRequest(Self::body("sign_up_error", &msg, request_id))
                 }
