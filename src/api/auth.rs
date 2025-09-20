@@ -8,6 +8,7 @@ use crate::{
         guard::AuthenticatedUser,
         retrieve_user_id::{RetrieveUserIdRequest, retrieve_user_id_handler},
         signin::{SigninRequest, signin_handler},
+        signout::{SignoutRequest, signout_handler},
         signup::{SignupRequest, signup_handler},
     },
     state::AppState,
@@ -73,6 +74,23 @@ impl AppApi {
             Ok(response) => {
                 AppHttpResponse::Ok(Json(serde_json::json!({ "token": response.token })))
             }
+            Err(e) => AppHttpResponse::from_app_error(e, &ctx.request_id),
+        }
+    }
+
+    #[oai(path = "/auth/signout", method = "post")]
+    #[tracing::instrument(name = "signout", skip_all, fields(req_id=%ctx.request_id))]
+    async fn signout(
+        &self,
+        ctx: RequestContext,
+        _auth: AuthenticatedUser,
+        state: Data<&AppState>,
+        payload: Json<SignoutRequest>,
+    ) -> AppHttpResponse {
+        match signout_handler(state, payload).await {
+            Ok(()) => AppHttpResponse::Ok(Json(
+                serde_json::json!({ "message": "User signed out successfully" }),
+            )),
             Err(e) => AppHttpResponse::from_app_error(e, &ctx.request_id),
         }
     }

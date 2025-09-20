@@ -14,6 +14,8 @@ pub struct AuthenticatedUser {
     pub user_id: String,
 }
 
+// Poem runs this extractor automatically whenever a handler declares an `AuthenticatedUser`
+// parameter, so routes just add the argument and receive a validated Supabase user id.
 impl<'a> FromRequest<'a> for AuthenticatedUser {
     async fn from_request(req: &'a Request, _: &mut RequestBody) -> poem::Result<Self> {
         let token = req
