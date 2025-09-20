@@ -5,6 +5,7 @@ use crate::{
     domain::error::http_response::AppHttpResponse,
     routes::auth::{
         delete_user::{DeleteUserRequest, delete_user_handler},
+        guard::AuthenticatedUser,
         retrieve_user_id::{RetrieveUserIdRequest, retrieve_user_id_handler},
         signin::{SigninRequest, signin_handler},
         signup::{SignupRequest, signup_handler},
@@ -31,6 +32,7 @@ impl AppApi {
     async fn delete_user(
         &self,
         ctx: RequestContext,
+        _auth: AuthenticatedUser,
         state: Data<&AppState>,
         payload: Json<DeleteUserRequest>,
     ) -> AppHttpResponse {
@@ -47,6 +49,7 @@ impl AppApi {
     async fn retrieve_user_id(
         &self,
         ctx: RequestContext,
+        _auth: AuthenticatedUser,
         state: Data<&AppState>,
         payload: Json<RetrieveUserIdRequest>,
     ) -> AppHttpResponse {

@@ -70,9 +70,12 @@ async fn delete_user_returns_200() {
         .json()
         .await
         .expect("Failed to parse signin response body");
-    assert!(signin_body.get("token").is_some());
+    let token = signin_body
+        .get("token")
+        .and_then(|v| v.as_str())
+        .expect("token not found in response");
 
-    let response = app.post_retrieve_user_id(&email).await;
+    let response = app.post_retrieve_user_id(token, &email).await;
     assert_eq!(response.status().as_u16(), 200);
     let response_body: serde_json::Value = response
         .json()
@@ -83,6 +86,6 @@ async fn delete_user_returns_200() {
         .and_then(|v| v.as_str())
         .expect("user_id not found in response");
 
-    let delete_response = app.delete_user(user_id).await;
+    let delete_response = app.delete_user(token, user_id).await;
     assert_eq!(delete_response.status().as_u16(), 200);
 }

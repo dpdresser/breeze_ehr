@@ -4,10 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-anyhow = "1"
+anyhow = "1.0.100"
 async-trait = "0.1"
 color-eyre = "0.6"
 dotenvy = "0.15"
+jsonwebtoken = "9.3.1"
 poem = { version = "3", features = ["rustls", "server", "requestid"] }
 poem-openapi = { version = "5", features = ["swagger-ui"] }
 regex = "1.11"

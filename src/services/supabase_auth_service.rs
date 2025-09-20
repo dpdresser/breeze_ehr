@@ -1,5 +1,5 @@
 use reqwest::{StatusCode, Url};
-use secrecy::ExposeSecret;
+use secrecy::{ExposeSecret, SecretString};
 use serde_json::{Value, json};
 
 use crate::domain::{
@@ -11,22 +11,22 @@ use crate::domain::{
 pub struct SupabaseAuthService {
     pub client: reqwest::Client,
     pub supabase_url: String,
-    pub supabase_anon_key: String,
-    pub supabase_service_role_key: String,
+    pub supabase_anon_key: SecretString,
+    pub supabase_service_role_key: SecretString,
 }
 
 impl SupabaseAuthService {
     pub fn new(
-        supabase_url: &str,
-        supabase_anon_key: &str,
-        supabase_service_role_key: &str,
+        supabase_url: String,
+        supabase_anon_key: SecretString,
+        supabase_service_role_key: SecretString,
     ) -> Self {
         let client = reqwest::Client::new();
         Self {
             client,
-            supabase_url: supabase_url.to_string(),
-            supabase_anon_key: supabase_anon_key.to_string(),
-            supabase_service_role_key: supabase_service_role_key.to_string(),
+            supabase_url,
+            supabase_anon_key,
+            supabase_service_role_key,
         }
     }
 }
@@ -39,10 +39,10 @@ impl AuthService for SupabaseAuthService {
         let resp = self
             .client
             .delete(&url)
-            .header("apikey", &self.supabase_service_role_key)
+            .header("apikey", self.supabase_service_role_key.expose_secret())
             .header(
                 "Authorization",
-                format!("Bearer {}", self.supabase_service_role_key),
+                format!("Bearer {}", self.supabase_service_role_key.expose_secret()),
             )
             .header("Content-Type", "application/json")
             .send()
@@ -84,10 +84,10 @@ impl AuthService for SupabaseAuthService {
         let resp = self
             .client
             .get(url)
-            .header("apikey", &self.supabase_service_role_key)
+            .header("apikey", self.supabase_service_role_key.expose_secret())
             .header(
                 "Authorization",
-                format!("Bearer {}", self.supabase_service_role_key),
+                format!("Bearer {}", self.supabase_service_role_key.expose_secret()),
             )
             .header("Content-Type", "application/json")
             .send()
@@ -158,7 +158,7 @@ impl AuthService for SupabaseAuthService {
         let resp = self
             .client
             .post(&url)
-            .header("apikey", &self.supabase_anon_key)
+            .header("apikey", self.supabase_anon_key.expose_secret())
             .header("Content-Type", "application/json")
             .json(&signin_request)
             .send()
@@ -211,7 +211,7 @@ impl AuthService for SupabaseAuthService {
         let resp = self
             .client
             .post(&url)
-            .header("apikey", &self.supabase_anon_key)
+            .header("apikey", self.supabase_anon_key.expose_secret())
             .header("Content-Type", "application/json")
             .json(&signup_request)
             .send()

@@ -1,10 +1,13 @@
+use secrecy::SecretString;
+
 #[derive(Debug, Clone)]
 pub struct AppConfig {
     pub app_address: String,
     pub log_level: String,
     pub supabase_url: String,
-    pub supabase_anon_key: String,
-    pub supabase_service_role_key: String,
+    pub supabase_anon_key: SecretString,
+    pub supabase_service_role_key: SecretString,
+    pub supabase_jwt_secret: SecretString,
     pub mailpit_url: String,
     pub email_confirm_redirect: Option<String>,
 }
@@ -24,6 +27,8 @@ impl AppConfig {
             std::env::var("SUPABASE_ANON_KEY").expect("SUPABASE_ANON_KEY must be set");
         let supabase_service_role_key = std::env::var("SUPABASE_SERVICE_ROLE_KEY")
             .expect("SUPABASE_SERVICE_ROLE_KEY must be set");
+        let supabase_jwt_secret =
+            std::env::var("SUPABASE_JWT_SECRET").expect("SUPABASE_JWT_SECRET must be set");
 
         let mailpit_url =
             std::env::var("MAILPIT_URL").unwrap_or_else(|_| "http://127.0.0.1:54324".to_string());
@@ -33,8 +38,9 @@ impl AppConfig {
             app_address,
             log_level,
             supabase_url,
-            supabase_anon_key,
-            supabase_service_role_key,
+            supabase_anon_key: SecretString::from(supabase_anon_key),
+            supabase_service_role_key: SecretString::from(supabase_service_role_key),
+            supabase_jwt_secret: SecretString::from(supabase_jwt_secret),
             mailpit_url,
             email_confirm_redirect,
         }
@@ -57,6 +63,8 @@ impl AppConfig {
             std::env::var("SUPABASE_ANON_KEY").expect("SUPABASE_ANON_KEY must be set");
         let supabase_service_role_key = std::env::var("SUPABASE_SERVICE_ROLE_KEY")
             .expect("SUPABASE_SERVICE_ROLE_KEY must be set");
+        let supabase_jwt_secret =
+            std::env::var("SUPABASE_JWT_SECRET").expect("SUPABASE_JWT_SECRET must be set");
 
         let mailpit_url =
             std::env::var("MAILPIT_URL").unwrap_or_else(|_| "http://127.0.0.1:54324".to_string());
@@ -66,8 +74,9 @@ impl AppConfig {
             app_address,
             log_level,
             supabase_url,
-            supabase_anon_key,
-            supabase_service_role_key,
+            supabase_anon_key: SecretString::from(supabase_anon_key),
+            supabase_service_role_key: SecretString::from(supabase_service_role_key),
+            supabase_jwt_secret: SecretString::from(supabase_jwt_secret),
             mailpit_url,
             email_confirm_redirect,
         }
