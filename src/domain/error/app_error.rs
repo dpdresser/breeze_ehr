@@ -10,6 +10,12 @@ pub enum AuthError {
     SignUpError(String),
     #[error("Email already in use")]
     EmailAlreadyInUse,
+    #[error("Failed to delete user: {0}")]
+    DeleteUserError(String),
+    #[error("Failed to retrieve user ID: {0}")]
+    RetrieveUserIdError(String),
+    #[error("User not found")]
+    UserNotFound,
     #[error("Missing token")]
     MissingToken,
     #[error("Invalid token")]

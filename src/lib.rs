@@ -5,7 +5,7 @@ use poem_openapi::OpenApiService;
 use tokio::sync::RwLock;
 
 use crate::{
-    api::AppApi, domain::error::app_error::AppResult,
+    api::auth::AppApi, domain::error::app_error::AppResult,
     services::supabase_auth_service::SupabaseAuthService, state::AppState,
     utils::config::AppConfig,
 };
@@ -25,10 +25,15 @@ pub struct App {
 impl App {
     pub fn new(config: AppConfig) -> Self {
         let auth_service = Arc::new(RwLock::new(SupabaseAuthService::new(
-            &config.supabase_url,
-            &config.supabase_key,
+            config.supabase_url.clone(),
+            config.supabase_anon_key.clone(),
+            config.supabase_service_role_key.clone(),
         )));
-        let state = AppState::new(auth_service, config.email_confirm_redirect.clone());
+        let state = AppState::new(
+            auth_service,
+            config.email_confirm_redirect.clone(),
+            config.supabase_jwt_secret.clone(),
+        );
         App { config, state }
     }
 

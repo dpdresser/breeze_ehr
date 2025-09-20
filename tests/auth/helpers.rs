@@ -1,4 +1,6 @@
+use once_cell::sync::Lazy;
 use regex::Regex;
+use reqwest::redirect::Policy;
 use serde_json::{Value, json};
 use sovaehr::{App, utils::config::AppConfig};
 use std::time::{Duration, Instant};
@@ -12,7 +14,10 @@ pub struct TestApp {
 impl TestApp {
     pub async fn new() -> Self {
         let settings = AppConfig::for_tests();
-        let http_client = reqwest::Client::new();
+        let http_client = reqwest::Client::builder()
+            .redirect(Policy::none())
+            .build()
+            .expect("Failed to build HTTP client");
 
         let app = App::new(settings.clone());
 
@@ -30,6 +35,31 @@ impl TestApp {
     pub async fn health_check(&self) -> reqwest::Response {
         self.http_client
             .get(&format!("http://{}/api/health", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+
+    pub async fn delete_user(&self, token: &str, user_id: &str) -> reqwest::Response {
+        let request_body = json!({ "user_id": user_id });
+        self.http_client
+            .delete(&format!("http://{}/api/auth/delete_user", &self.address))
+            .bearer_auth(token)
+            .json(&request_body)
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+
+    pub async fn post_retrieve_user_id(&self, token: &str, email: &str) -> reqwest::Response {
+        let request_body = json!({ "email": email });
+        self.http_client
+            .post(&format!(
+                "http://{}/api/auth/retrieve_user_id",
+                &self.address
+            ))
+            .bearer_auth(token)
+            .json(&request_body)
             .send()
             .await
             .expect("Failed to execute request.")
@@ -73,7 +103,7 @@ impl TestApp {
             .expect("Failed to execute request.");
     }
 
-    pub async fn poll_mailpit_messages(&self, email: &str) -> Option<reqwest::Response> {
+    pub async fn wait_for_verification_link(&self, email: &str) -> Option<String> {
         let deadline = Instant::now() + Duration::from_secs(10);
         let poll_interval = Duration::from_millis(250);
         let normalized_email = email.to_ascii_lowercase();
@@ -90,22 +120,36 @@ impl TestApp {
                 .expect("Failed to parse Mailpit response body");
 
             if let Some(message_id) = find_message_id(&messages, &normalized_email) {
-                return Some(
-                    self.http_client
-                        .get(format!(
-                            "{}/api/v1/message/{}",
-                            self.mailpit_url, message_id
-                        ))
-                        .send()
-                        .await
-                        .expect("Failed to execute request."),
-                );
+                let message: Value = self
+                    .http_client
+                    .get(format!(
+                        "{}/api/v1/message/{}",
+                        self.mailpit_url, message_id
+                    ))
+                    .send()
+                    .await
+                    .expect("Failed to execute request.")
+                    .json()
+                    .await
+                    .expect("Failed to parse Mailpit message response");
+
+                if let Some(link) = find_verification_link(&message) {
+                    return Some(link);
+                }
             }
 
             tokio::time::sleep(poll_interval).await;
         }
 
         None
+    }
+
+    pub async fn verification_link(&self, email: &str) -> String {
+        self.wait_for_verification_link(email).await.unwrap_or_else(|| {
+            panic!(
+                "No verification email found for {email}. Ensure Supabase email confirmations are enabled."
+            )
+        })
     }
 }
 
@@ -154,10 +198,28 @@ fn find_in_messages(messages: &[Value], email: &str, recipient_keys: &[&str]) ->
         }
     })
 }
+
+static LINK_REGEX: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"https?://[^\s"<>]+"#).expect("valid verification link regex"));
+
 pub fn find_link_in_html(html: &str) -> Option<String> {
-    let re = Regex::new(r#"https?://[^\s"<>]+"#).unwrap();
-    re.find(html).map(|m| {
+    LINK_REGEX.find(html).map(|m| {
         let cleaned = m.as_str().trim_end_matches(|c| c == '"' || c == ')');
         cleaned.replace("&amp;", "&")
+    })
+}
+
+pub fn find_verification_link(message: &Value) -> Option<String> {
+    ["HTML", "Text"]
+        .iter()
+        .find_map(|field| message.get(field).and_then(extract_link_from_value))
+}
+
+fn extract_link_from_value(value: &Value) -> Option<String> {
+    value.as_str().and_then(find_link_in_html).or_else(|| {
+        value
+            .get("Body")
+            .and_then(Value::as_str)
+            .and_then(find_link_in_html)
     })
 }

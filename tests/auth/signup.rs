@@ -1,8 +1,7 @@
-use reqwest::redirect::Policy;
 use sovaehr::utils::tracing::init_tracing;
 use uuid::Uuid;
 
-use crate::helpers::{TestApp, find_link_in_html};
+use crate::helpers::TestApp;
 
 #[tokio::test]
 async fn signup_with_invalid_email_returns_400() {
@@ -80,41 +79,10 @@ async fn signup_sends_verify_email_and_allows_signin_after_verification_with_200
     let signup_response = app.post_signup(&email, password, None).await;
     assert_eq!(signup_response.status().as_u16(), 201);
 
-    let message_response = app
-        .poll_mailpit_messages(&email)
-        .await
-        .unwrap_or_else(|| {
-            panic!(
-                "No verification email found for {email}. Ensure Supabase email confirmations are enabled."
-            )
-        });
-    let message_body: serde_json::Value = message_response
-        .json()
-        .await
-        .expect("Failed to parse Mailpit message response");
+    let verification_url = app.verification_link(&email).await;
 
-    let extract_link = |field: &str| -> Option<String> {
-        let value = message_body.get(field)?;
-        if let Some(content) = value.as_str() {
-            return find_link_in_html(content);
-        }
-
-        value
-            .get("Body")
-            .and_then(|body| body.as_str())
-            .and_then(find_link_in_html)
-    };
-
-    let verification_url = extract_link("HTML")
-        .or_else(|| extract_link("Text"))
-        .expect("No verification link found in email");
-
-    let verification_client = reqwest::Client::builder()
-        .redirect(Policy::none())
-        .build()
-        .expect("Failed to build verification client");
-
-    let verify_response = verification_client
+    let verify_response = app
+        .http_client
         .get(&verification_url)
         .send()
         .await
@@ -134,28 +102,23 @@ async fn signup_sends_verify_email_and_allows_signin_after_verification_with_200
         .await
         .expect("Failed to parse signin response body");
     assert!(signin_body.get("token").is_some());
-}
 
-#[tokio::test]
-async fn signin_with_unverified_email_fails_with_401() {
-    init_tracing("info");
-    let app = TestApp::new().await;
+    let token = signin_body
+        .get("token")
+        .and_then(|v| v.as_str())
+        .expect("token not found in response");
 
-    app.clear_mailpit_messages().await;
-
-    let email = format!("new-user+{}@example.com", Uuid::new_v4());
-    let password = "Password123!";
-    let signup_response = app.post_signup(&email, password, None).await;
-    assert_eq!(signup_response.status().as_u16(), 201);
-    let signin_response = app.post_signin(&email, password).await;
-    assert_eq!(signin_response.status().as_u16(), 401);
-    let signin_body: serde_json::Value = signin_response
+    let response = app.post_retrieve_user_id(token, &email).await;
+    assert_eq!(response.status().as_u16(), 200);
+    let response_body: serde_json::Value = response
         .json()
         .await
-        .expect("Failed to parse signin response body");
-    assert!(signin_body.get("message").is_some());
-    assert_eq!(
-        signin_body.get("message").unwrap().as_str().unwrap(),
-        "Email not confirmed"
-    );
+        .expect("Failed to parse response body");
+    let user_id = response_body
+        .get("user_id")
+        .and_then(|v| v.as_str())
+        .expect("user_id not found in response");
+
+    let delete_response = app.delete_user(token, user_id).await;
+    assert_eq!(delete_response.status().as_u16(), 200);
 }

@@ -3,7 +3,10 @@ use poem_openapi::{OpenApi, payload::Json};
 
 use crate::{
     domain::error::http_response::AppHttpResponse,
-    routes::{
+    routes::auth::{
+        delete_user::{DeleteUserRequest, delete_user_handler},
+        guard::AuthenticatedUser,
+        retrieve_user_id::{RetrieveUserIdRequest, retrieve_user_id_handler},
         signin::{SigninRequest, signin_handler},
         signup::{SignupRequest, signup_handler},
     },
@@ -22,6 +25,40 @@ impl AppApi {
         AppHttpResponse::Ok(poem_openapi::payload::Json(
             serde_json::json!({"status": "ok"}),
         ))
+    }
+
+    #[oai(path = "/auth/delete_user", method = "delete")]
+    #[tracing::instrument(name = "delete_user", skip_all, fields(req_id=%ctx.request_id))]
+    async fn delete_user(
+        &self,
+        ctx: RequestContext,
+        _auth: AuthenticatedUser,
+        state: Data<&AppState>,
+        payload: Json<DeleteUserRequest>,
+    ) -> AppHttpResponse {
+        match delete_user_handler(state, payload).await {
+            Ok(()) => AppHttpResponse::Ok(Json(
+                serde_json::json!({ "message": "User deleted successfully" }),
+            )),
+            Err(e) => AppHttpResponse::from_app_error(e, &ctx.request_id),
+        }
+    }
+
+    #[oai(path = "/auth/retrieve_user_id", method = "post")]
+    #[tracing::instrument(name = "retrieve_user_id", skip_all, fields(req_id=%ctx.request_id))]
+    async fn retrieve_user_id(
+        &self,
+        ctx: RequestContext,
+        _auth: AuthenticatedUser,
+        state: Data<&AppState>,
+        payload: Json<RetrieveUserIdRequest>,
+    ) -> AppHttpResponse {
+        match retrieve_user_id_handler(state, payload).await {
+            Ok(response) => {
+                AppHttpResponse::Ok(Json(serde_json::json!({ "user_id": response.user_id })))
+            }
+            Err(e) => AppHttpResponse::from_app_error(e, &ctx.request_id),
+        }
     }
 
     #[oai(path = "/auth/signin", method = "post")]

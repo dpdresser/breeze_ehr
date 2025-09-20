@@ -5,48 +5,76 @@ MVP of SovaEHR SaaS Product
 
 ```
 sovaehr/
-├── 📄 README.md                    # Project documentation
-├── 📄 .env                         # Environment variables (local development)
-├── 📄 .gitignore                   # Git ignore rules
-├── 📄 Cargo.toml                   # Rust project configuration
-├── 📄 Cargo.lock                   # Rust dependency lock file
+├── 📄 README.md
+├── 📄 .env
+├── 📄 .env.example
+├── 📄 .gitignore
+├── 📄 Cargo.toml
+├── 📄 Cargo.lock
+├── 📄 ehr_log.csv
 │
-├── 🗂️ src/                         # Rust application source code
-│   ├── 📄 main.rs                  # Application entry point
-│   ├── 📄 lib.rs                   # Library root
-│   ├── 📄 api.rs                   # API routes and handlers
-│   ├── 📄 state.rs                 # Application state management
-│   ├── 🗂️ domain/                  # Domain logic and types
-│   │   ├── 📄 mod.rs               # Domain module exports
-│   │   └── 🗂️ error/               # Error handling
-│   │       ├── 📄 mod.rs           # Error module exports
-│   │       ├── 📄 app_error.rs     # Application error types
-│   │       └── 📄 http_response.rs # HTTP error responses
-│   └── 🗂️ utils/                   # Utility modules
-│       ├── 📄 mod.rs               # Utils module exports
-│       ├── 📄 config.rs            # Configuration management
-│       └── 📄 tracing.rs           # Logging and tracing setup
+├── 🗂️ src/
+│   ├── 📄 main.rs
+│   ├── 📄 lib.rs
+│   ├── 📄 state.rs
+│   ├── 🗂️ api/
+│   │   ├── 📄 mod.rs
+│   │   └── 📄 auth.rs
+│   ├── 🗂️ routes/
+│   │   ├── 📄 mod.rs
+│   │   └── 🗂️ auth/
+│   │       ├── 📄 mod.rs
+│   │       ├── 📄 guard.rs
+│   │       ├── 📄 signin.rs
+│   │       ├── 📄 signup.rs
+│   │       ├── 📄 retrieve_user_id.rs
+│   │       └── 📄 delete_user.rs
+│   ├── 🗂️ domain/
+│   │   ├── 📄 mod.rs
+│   │   ├── 🗂️ error/
+│   │   │   ├── 📄 mod.rs
+│   │   │   ├── 📄 app_error.rs
+│   │   │   └── 📄 http_response.rs
+│   │   ├── 🗂️ interfaces/
+│   │   │   ├── 📄 mod.rs
+│   │   │   └── 📄 auth_service.rs
+│   │   └── 🗂️ types/
+│   │       ├── 📄 mod.rs
+│   │       ├── 📄 email.rs
+│   │       └── 📄 password.rs
+│   ├── 🗂️ services/
+│   │   └── 📄 supabase_auth_service.rs
+│   └── 🗂️ utils/
+│       ├── 📄 mod.rs
+│       ├── 📄 config.rs
+│       └── 📄 tracing.rs
 │
-├── 🗂️ tests/                       # Integration tests
-│   └── 🗂️ api/                     # API integration tests
-│       ├── 📄 main.rs              # Test runner
-│       ├── 📄 helpers.rs           # Test utilities
-│       └── 📄 health.rs            # Health endpoint tests
+├── 🗂️ tests/
+│   └── 🗂️ auth/
+│       ├── 📄 main.rs
+│       ├── 📄 helpers.rs
+│       ├── 📄 health.rs
+│       ├── 📄 signin.rs
+│       ├── 📄 signup.rs
+│       ├── 📄 retrieve_user_id.rs
+│       └── 📄 delete_user.rs
 │
-├── 🗂️ scripts/                     # Development and deployment scripts
-│   ├── 📄 dev-reset.sh             # Development database reset script
-│   └── 📄 test_users_init.sh       # Test user creation script
+├── 🗂️ scripts/
+│   ├── 📄 dev-reset.sh
+│   └── 📄 test_users_init.sh
 │
-├── 🗂️ supabase/                    # Supabase backend configuration
-│   ├── 📄 config.toml              # Supabase project configuration
-│   ├── 🗂️ migrations/              # Database schema migrations
-│   │   ├── 📄 20250918151818_init_core_practice_schema.sql  # Core schema
-│   │   └── 📄 20250918190003_add_audit_log.sql             # Audit system
-│   └── 🗂️ seeds/                   # Database seed data
-│       └── 📄 after_users.sql      # Post-user-creation seed data
+├── 🗂️ supabase/
+│   ├── 📄 config.toml
+│   ├── 🗂️ migrations/
+│   │   ├── 📄 20250918151818_init_core_practice_schema.sql
+│   │   └── 📄 20250918190003_add_audit_log.sql
+│   └── 🗂️ seeds/
+│       └── 📄 after_users.sql
 │
-├── 🗂️ target/                      # Rust build artifacts (generated)
-└── 🗂️ .vscode/                     # VS Code workspace configuration
+├── 🗂️ target/ *(generated)*
+└── 🗂️ .vscode/
+    ├── 📄 extensions.json
+    └── 📄 settings.json
 ```
 
 ## Tech Stack
