@@ -8,7 +8,7 @@ use crate::{
         guard::AuthenticatedUser,
         retrieve_user_id::{RetrieveUserIdRequest, retrieve_user_id_handler},
         signin::{SigninRequest, signin_handler},
-        signout::{SignoutRequest, signout_handler},
+        signout::signout_handler,
         signup::{SignupRequest, signup_handler},
     },
     state::AppState,
@@ -83,11 +83,10 @@ impl AppApi {
     async fn signout(
         &self,
         ctx: RequestContext,
-        _auth: AuthenticatedUser,
+        auth: AuthenticatedUser,
         state: Data<&AppState>,
-        payload: Json<SignoutRequest>,
     ) -> AppHttpResponse {
-        match signout_handler(state, payload).await {
+        match signout_handler(state, auth).await {
             Ok(()) => AppHttpResponse::Ok(Json(
                 serde_json::json!({ "message": "User signed out successfully" }),
             )),

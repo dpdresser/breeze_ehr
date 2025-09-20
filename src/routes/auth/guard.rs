@@ -12,6 +12,7 @@ struct SupabaseClaims {
 
 pub struct AuthenticatedUser {
     pub user_id: String,
+    pub token: String,
 }
 
 // Poem runs this extractor automatically whenever a handler declares an `AuthenticatedUser`
@@ -25,6 +26,8 @@ impl<'a> FromRequest<'a> for AuthenticatedUser {
             .and_then(|s| s.strip_prefix("Bearer "))
             .ok_or_else(|| poem::Error::from_status(poem::http::StatusCode::UNAUTHORIZED))?;
 
+        let raw_token = token.to_string();
+
         let state = req.data::<AppState>().ok_or_else(|| {
             poem::Error::from_status(poem::http::StatusCode::INTERNAL_SERVER_ERROR)
         })?;
@@ -36,11 +39,12 @@ impl<'a> FromRequest<'a> for AuthenticatedUser {
         let mut validation = Validation::new(Algorithm::HS256);
         validation.validate_aud = false;
 
-        let data = decode::<SupabaseClaims>(token, &decoding_key, &validation)
+        let data = decode::<SupabaseClaims>(&raw_token, &decoding_key, &validation)
             .map_err(|_| poem::Error::from_status(poem::http::StatusCode::UNAUTHORIZED))?;
 
         Ok(Self {
             user_id: data.claims.sub,
+            token: raw_token,
         })
     }
 }

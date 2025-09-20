@@ -76,14 +76,9 @@ impl TestApp {
     }
 
     pub async fn post_signout(&self, token: &str) -> reqwest::Response {
-        let request_body = json!({
-            "token": token
-        });
-
         self.http_client
             .post(&format!("http://{}/api/auth/signout", &self.address))
             .bearer_auth(token)
-            .json(&request_body)
             .send()
             .await
             .expect("Failed to execute request.")
