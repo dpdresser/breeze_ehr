@@ -18,6 +18,12 @@ use crate::{
 #[derive(Debug)]
 pub struct AppApi;
 
+// TODO: forgot email and reset password routes
+// TODO: update user details route
+// TODO: send invite route (requires practices api)
+// TODO: TOTP/MFA routes
+// TODO: SMS 2FA routes
+
 #[OpenApi]
 impl AppApi {
     #[oai(path = "/health", method = "get")]
