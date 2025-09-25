@@ -1,0 +1,71 @@
+ehr.ddrcode.me, www.ehr.ddrcode.me {
+    # Redirect www to non-www
+    @www host www.ehr.ddrcode.me
+    redir @www https://ehr.ddrcode.me{uri} permanent
+
+    # Let's Encrypt certificates (automatic)
+    tls ddresser05@gmail.com
+
+    # Rate limiting
+    rate_limit {
+        zone dynamic {
+            key {remote_host}
+            events 100
+            window 1m
+        }
+    }
+
+    # API routes
+    handle /api/* {
+        reverse_proxy https://127.0.0.1:8443 {
+            health_uri /api/health
+            health_interval 30s
+            health_timeout 5s
+        }
+    }
+
+    # Documentation (maybe restrict in production)
+    handle /docs/* {
+        reverse_proxy https://127.0.0.1:8443
+    }
+
+    # Frontend
+    handle {
+        root * /var/www/sovaehr/frontend
+        try_files {path} {path}.html {path}/index.html /index.html
+        file_server
+        
+        # Cache static assets
+        @static path *.css *.js *.png *.jpg *.svg *.ico *.woff *.woff2
+        header @static Cache-Control "public, max-age=31536000"
+    }
+
+    # Production logging (less verbose)
+    log {
+        output file /var/log/caddy/sovaehr-access.log {
+            roll_size 100MiB
+            roll_keep 10
+        }
+        format filter {
+            wrap json
+            fields {
+                request>uri>query delete
+                request>headers>authorization delete
+            }
+        }
+    }
+
+    # Security headers
+    header {
+        -Server
+        Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy strict-origin-when-cross-origin
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+    }
+
+    # Compression
+    encode gzip zstd
+}
