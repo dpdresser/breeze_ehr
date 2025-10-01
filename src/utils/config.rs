@@ -10,6 +10,8 @@ pub struct AppConfig {
     pub supabase_jwt_secret: SecretString,
     pub mailpit_url: String,
     pub email_confirm_redirect: Option<String>,
+    pub tls_cert_path: String,
+    pub tls_key_path: String,
 }
 
 impl AppConfig {
@@ -34,6 +36,9 @@ impl AppConfig {
             std::env::var("MAILPIT_URL").unwrap_or_else(|_| "http://127.0.0.1:54324".to_string());
         let email_confirm_redirect = std::env::var("SIGNUP_CONFIRM_REDIRECT").ok();
 
+        let tls_cert_path = std::env::var("TLS_CERT_PATH").expect("TLS_CERT_PATH must be set");
+        let tls_key_path = std::env::var("TLS_KEY_PATH").expect("TLS_KEY_PATH must be set");
+
         AppConfig {
             app_address,
             log_level,
@@ -43,6 +48,8 @@ impl AppConfig {
             supabase_jwt_secret: SecretString::from(supabase_jwt_secret),
             mailpit_url,
             email_confirm_redirect,
+            tls_cert_path,
+            tls_key_path,
         }
     }
 
@@ -58,7 +65,7 @@ impl AppConfig {
 
         let log_level = "info".to_string();
 
-        let supabase_url = std::env::var("SUPABASE_URL").expect("SUPABASE_URL must be set");
+        let supabase_url = std::env::var("SUPABASE_URL_TEST").expect("SUPABASE_URL must be set");
         let supabase_anon_key =
             std::env::var("SUPABASE_ANON_KEY").expect("SUPABASE_ANON_KEY must be set");
         let supabase_service_role_key = std::env::var("SUPABASE_SERVICE_ROLE_KEY")
@@ -70,6 +77,9 @@ impl AppConfig {
             std::env::var("MAILPIT_URL").unwrap_or_else(|_| "http://127.0.0.1:54324".to_string());
         let email_confirm_redirect = std::env::var("SIGNUP_CONFIRM_REDIRECT").ok();
 
+        let tls_cert_path = std::env::var("TLS_CERT_PATH").expect("TLS_CERT_PATH must be set");
+        let tls_key_path = std::env::var("TLS_KEY_PATH").expect("TLS_KEY_PATH must be set");
+
         AppConfig {
             app_address,
             log_level,
@@ -79,6 +89,8 @@ impl AppConfig {
             supabase_jwt_secret: SecretString::from(supabase_jwt_secret),
             mailpit_url,
             email_confirm_redirect,
+            tls_cert_path,
+            tls_key_path,
         }
     }
 }

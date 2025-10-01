@@ -1,8 +1,8 @@
+use breezeehr::{App, utils::config::AppConfig};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use reqwest::redirect::Policy;
 use serde_json::{Value, json};
-use sovaehr::{App, utils::config::AppConfig};
 use std::time::{Duration, Instant};
 
 pub struct TestApp {
@@ -34,7 +34,7 @@ impl TestApp {
 
     pub async fn health_check(&self) -> reqwest::Response {
         self.http_client
-            .get(&format!("http://{}/api/health", &self.address))
+            .get(&format!("https://{}/api/health", &self.address))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -43,7 +43,7 @@ impl TestApp {
     pub async fn delete_user(&self, token: &str, user_id: &str) -> reqwest::Response {
         let request_body = json!({ "user_id": user_id });
         self.http_client
-            .delete(&format!("http://{}/api/auth/delete_user", &self.address))
+            .delete(&format!("https://{}/api/auth/delete_user", &self.address))
             .bearer_auth(token)
             .json(&request_body)
             .send()
@@ -55,7 +55,7 @@ impl TestApp {
         let request_body = json!({ "email": email });
         self.http_client
             .post(&format!(
-                "http://{}/api/auth/retrieve_user_id",
+                "https://{}/api/auth/retrieve_user_id",
                 &self.address
             ))
             .bearer_auth(token)
@@ -68,7 +68,7 @@ impl TestApp {
     pub async fn post_signin(&self, email: &str, password: &str) -> reqwest::Response {
         let request_body = json!({ "email": email, "password": password });
         self.http_client
-            .post(&format!("http://{}/api/auth/signin", &self.address))
+            .post(&format!("https://{}/api/auth/signin", &self.address))
             .json(&request_body)
             .send()
             .await
@@ -77,7 +77,7 @@ impl TestApp {
 
     pub async fn post_signout(&self, token: &str) -> reqwest::Response {
         self.http_client
-            .post(&format!("http://{}/api/auth/signout", &self.address))
+            .post(&format!("https://{}/api/auth/signout", &self.address))
             .bearer_auth(token)
             .send()
             .await
@@ -97,7 +97,7 @@ impl TestApp {
         }
 
         self.http_client
-            .post(&format!("http://{}/api/auth/signup", &self.address))
+            .post(&format!("https://{}/api/auth/signup", &self.address))
             .json(&request_body)
             .send()
             .await

@@ -1,4 +1,4 @@
-use sovaehr::utils::tracing::init_tracing;
+use breezeehr::utils::tracing::init_tracing;
 
 use crate::helpers::TestApp;
 
