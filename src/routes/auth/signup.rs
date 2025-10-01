@@ -28,10 +28,7 @@ pub async fn signup_handler(
     let email = Email::new(payload.email.clone())?;
     let password = Password::new(payload.password.clone())?;
 
-    let redirect = payload
-        .redirect_to
-        .clone()
-        .or_else(|| state.email_confirm_redirect.clone());
+    let redirect = payload.redirect_to.clone();
 
     state
         .auth_service

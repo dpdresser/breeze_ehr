@@ -37,11 +37,7 @@ impl App {
             config.supabase_anon_key.clone(),
             config.supabase_service_role_key.clone(),
         )));
-        let state = AppState::new(
-            auth_service,
-            config.email_confirm_redirect.clone(),
-            config.supabase_jwt_secret.clone(),
-        );
+        let state = AppState::new(auth_service, config.supabase_jwt_secret.clone());
         App { config, state }
     }
 
