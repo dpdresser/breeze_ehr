@@ -6,37 +6,9 @@ breezeehr.ddrcode.me, www.breezeehr.ddrcode.me {
     # Let's Encrypt certificates (automatic)
     tls ddresser05@gmail.com
 
-    # API routes - Changed to HTTP
-    handle /api/* {
-        reverse_proxy http://breezeehr:3000 {
-            health_uri /api/health
-            health_interval 30s
-            health_timeout 5s
-        }
-    }
+    reverse_proxy http://breezeehr:3000
 
-    # Documentation - Changed to HTTP
-    handle /docs/* {
-        reverse_proxy http://breezeehr:3000
-    }
-
-    # Health check - Add this for container health checks
-    handle /health {
-        reverse_proxy http://breezeehr:3000/api/health
-    }
-
-    # Frontend - Updated to use container's public directory
-    handle {
-        root * /app/public
-        try_files {path} {path}.html {path}/index.html /index.html
-        file_server
-        
-        # Cache static assets
-        @static path *.css *.js *.png *.jpg *.svg *.ico *.woff *.woff2
-        header @static Cache-Control "public, max-age=31536000"
-    }
-
-    # Production logging (less verbose)
+    # Production logging
     log {
         output file /var/log/caddy/breezeehr-access.log {
             roll_size 100MiB
@@ -51,7 +23,7 @@ breezeehr.ddrcode.me, www.breezeehr.ddrcode.me {
         }
     }
 
-    # Security headers
+    # Security headers (updated CSP)
     header {
         -Server
         Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
@@ -59,7 +31,7 @@ breezeehr.ddrcode.me, www.breezeehr.ddrcode.me {
         X-Frame-Options DENY
         X-XSS-Protection "1; mode=block"
         Referrer-Policy strict-origin-when-cross-origin
-        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'"
     }
 
     # Compression
