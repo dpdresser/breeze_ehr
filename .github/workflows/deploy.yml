@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  RUST_VERSION: 1.88
+  RUST_VERSION: 1.75  # Fixed: 1.88 doesn't exist yet
 
 jobs:
   # Continuous Integration
@@ -56,6 +56,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
     - name: Log in to Container Registry
       uses: docker/login-action@v3
       with:
@@ -71,6 +74,7 @@ jobs:
         tags: |
           type=ref,event=branch
           type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
@@ -79,6 +83,8 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
     - name: Copy Caddyfile to server
       uses: appleboy/scp-action@v0.1.7
@@ -96,8 +102,11 @@ jobs:
         username: ${{ secrets.DROPLET_USER }}
         password: ${{ secrets.DROPLET_PW }}
         script: |
-          # Create app directory
+          # Create app directory and set permissions
           mkdir -p /var/www/breezeehr
+          mkdir -p /var/log/caddy
+          chmod 755 /var/www/breezeehr
+          chmod 755 /var/log/caddy
           cd /var/www/breezeehr
           
           # Login to GitHub Container Registry
@@ -106,8 +115,13 @@ jobs:
           # Pull latest image
           docker pull ghcr.io/${{ github.repository }}:main
           
-          # Stop existing containers
-          docker compose -f docker-compose.prod.yml down || true
+          # Create backup of current deployment
+          if [ -f docker-compose.prod.yml ]; then
+            cp docker-compose.prod.yml docker-compose.prod.yml.backup
+          fi
+          
+          # Stop existing containers gracefully
+          docker compose -f docker-compose.prod.yml down --timeout 30 || true
           
           # Create docker-compose file
           cat > docker-compose.prod.yml << 'EOF'
@@ -127,6 +141,12 @@ jobs:
                 - SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY_PROD }}
                 - SUPABASE_JWT_SECRET=${{ secrets.SUPABASE_JWT_SECRET_PROD }}
                 - SUPABASE_DB_URL=${{ secrets.SUPABASE_DB_URL_PROD }}
+              healthcheck:
+                test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+                interval: 30s
+                timeout: 10s
+                retries: 3
+                start_period: 40s
               networks:
                 - app-network
             
@@ -144,7 +164,8 @@ jobs:
               networks:
                 - app-network
               depends_on:
-                - breezeehr
+                breezeehr:
+                  condition: service_healthy
 
           volumes:
             caddy_data:
@@ -158,8 +179,63 @@ jobs:
           # Start services
           docker compose -f docker-compose.prod.yml up -d
           
+          # Wait for services to be ready
+          echo "Waiting for services to start..."
+          sleep 30
+          
+          # Check if services are running
+          if ! docker compose -f docker-compose.prod.yml ps | grep -q "Up"; then
+            echo "Services failed to start, rolling back..."
+            docker compose -f docker-compose.prod.yml down
+            if [ -f docker-compose.prod.yml.backup ]; then
+              mv docker-compose.prod.yml.backup docker-compose.prod.yml
+              docker compose -f docker-compose.prod.yml up -d
+            fi
+            exit 1
+          fi
+          
           # Show status
           docker compose -f docker-compose.prod.yml ps
           
-          # Clean up old images
+          # Clean up
           docker image prune -f
+          rm -f docker-compose.prod.yml.backup
+          
+          echo "✅ Deployment successful!"
+
+    - name: Run smoke tests
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.DROPLET_HOST }}
+        username: ${{ secrets.DROPLET_USER }}
+        password: ${{ secrets.DROPLET_PW }}
+        script: |
+          # Wait a bit more for services to fully start
+          sleep 10
+          
+          # Test local health endpoint
+          if curl -f http://localhost/health; then
+            echo "✅ Local health check passed"
+          else
+            echo "❌ Local health check failed"
+            exit 1
+          fi
+          
+          # Test public endpoint (may take a moment for DNS/certs)
+          echo "Testing public endpoint..."
+          for i in {1..5}; do
+            if curl -f https://breezeehr.ddrcode.me/health; then
+              echo "✅ Public health check passed"
+              break
+            else
+              echo "⏳ Attempt $i failed, retrying in 10s..."
+              sleep 10
+            fi
+            
+            if [ $i -eq 5 ]; then
+              echo "❌ Public health check failed after 5 attempts"
+              exit 1
+            fi
+          done
+          
+          echo "🚀 All smoke tests passed!"

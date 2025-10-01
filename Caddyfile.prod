@@ -15,18 +15,23 @@ breezeehr.ddrcode.me, www.breezeehr.ddrcode.me {
         }
     }
 
-    # API routes
+    # API routes - Changed to HTTP
     handle /api/* {
-        reverse_proxy https://127.0.0.1:3000 {
+        reverse_proxy http://breezeehr:3000 {
             health_uri /api/health
             health_interval 30s
             health_timeout 5s
         }
     }
 
-    # Documentation (maybe restrict in production)
+    # Documentation - Changed to HTTP
     handle /docs/* {
-        reverse_proxy https://127.0.0.1:3000
+        reverse_proxy http://breezeehr:3000
+    }
+
+    # Health check - Add this for container health checks
+    handle /health {
+        reverse_proxy http://breezeehr:3000
     }
 
     # Frontend

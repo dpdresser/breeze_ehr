@@ -3,7 +3,7 @@ use std::sync::Arc;
 use poem::{
     EndpointExt, Route, Server,
     http::Method,
-    listener::{Listener, RustlsCertificate, RustlsConfig, TcpListener},
+    listener::TcpListener,
     middleware::{Cors, Tracing},
 };
 use poem_openapi::OpenApiService;
@@ -42,15 +42,17 @@ impl App {
     }
 
     pub async fn run(&self) -> AppResult<()> {
-        // OpenAPI service
+        // OpenAPI service - use HTTP since Caddy handles TLS
         let api_service = OpenApiService::new(AppApi, "BreezeEHR API", "1.0")
-            .server(format!("https://{}", self.config.app_address));
+            .server(format!("http://{}", self.config.app_address));
         let ui = api_service.swagger_ui();
 
-        // CORS
+        // CORS - allow Caddy's domains
         let cors = Cors::new()
             .allow_origin("https://localhost:8443")
             .allow_origin("https://127.0.0.1:8443")
+            .allow_origin("https://breezeehr.ddrcode.me")
+            .allow_origin("https://www.breezeehr.ddrcode.me")
             .allow_methods(vec![
                 Method::GET,
                 Method::POST,
@@ -70,13 +72,14 @@ impl App {
             .with(cors)
             .data(self.state.clone());
 
-        // TLS config
-        let cert_data = std::fs::read(&self.config.tls_cert_path).map_err(AppError::internal)?;
-        let key_data = std::fs::read(&self.config.tls_key_path).map_err(AppError::internal)?;
-        let cert = RustlsCertificate::new().key(key_data).cert(cert_data);
-        let rustls_config = RustlsConfig::new().fallback(cert);
+        // Simple HTTP listener - no TLS!
+        let listener = TcpListener::bind(&self.config.app_address);
 
-        let listener = TcpListener::bind(&self.config.app_address).rustls(rustls_config);
+        println!(
+            "Starting HTTP server on {} (TLS handled by Caddy)",
+            self.config.app_address
+        );
+
         Server::new(listener)
             .run(app)
             .await

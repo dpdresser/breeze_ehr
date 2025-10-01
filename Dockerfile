@@ -9,9 +9,8 @@ RUN cargo build --release
 FROM gcr.io/distroless/cc-debian12
 
 WORKDIR /app
-COPY --from=builder /app/target/release/breezeehr /app/breezeehr
-COPY --from=builder /app/certs /app/certs
+COPY --from=builder /app/target/release/breeze_ehr /app/breeze_ehr
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 EXPOSE 3000
-ENTRYPOINT ["/app/breezeehr"]
+ENTRYPOINT ["/app/breeze_ehr"]
