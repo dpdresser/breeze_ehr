@@ -1,4 +1,4 @@
-use breezeehr::utils::tracing::init_tracing;
+use breeze_ehr::utils::tracing::init_tracing;
 use uuid::Uuid;
 
 use crate::helpers::TestApp;

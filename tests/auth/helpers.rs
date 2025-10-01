@@ -1,4 +1,4 @@
-use breezeehr::{App, utils::config::AppConfig};
+use breeze_ehr::{App, utils::config::AppConfig};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use reqwest::redirect::Policy;

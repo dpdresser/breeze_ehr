@@ -1,4 +1,4 @@
-use breezeehr::{
+use breeze_ehr::{
     App,
     utils::{config::AppConfig, tracing::init_tracing},
 };

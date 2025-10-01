@@ -1,0 +1,165 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  RUST_VERSION: 1.88
+
+jobs:
+  # Continuous Integration
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: ${{ env.RUST_VERSION }}
+        components: rustfmt, clippy
+
+    - name: Cache Rust dependencies
+      uses: Swatinem/rust-cache@v2
+
+    - name: Check formatting
+      run: cargo fmt --all -- --check
+
+    - name: Run Clippy
+      run: cargo clippy --all-targets --all-features -- -D warnings
+
+    - name: Run unit tests (no database)
+      run: cargo test --lib
+
+    - name: Build release binary
+      run: cargo build --release
+
+  # Build and deploy (only on main branch)
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=sha,prefix={{branch}}-
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+
+    - name: Copy Caddyfile to server
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.DROPLET_HOST }}
+        username: ${{ secrets.DROPLET_USER }}
+        password: ${{ secrets.DROPLET_PW }}
+        source: "Caddyfile.prod"
+        target: "/var/www/breezeehr/"
+
+    - name: Deploy to DigitalOcean
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.DROPLET_HOST }}
+        username: ${{ secrets.DROPLET_USER }}
+        password: ${{ secrets.DROPLET_PW }}
+        script: |
+          # Create app directory
+          mkdir -p /var/www/breezeehr
+          cd /var/www/breezeehr
+          
+          # Login to GitHub Container Registry
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          
+          # Pull latest image
+          docker pull ghcr.io/${{ github.repository }}:main
+          
+          # Stop existing containers
+          docker compose -f docker-compose.prod.yml down || true
+          
+          # Create docker-compose file
+          cat > docker-compose.prod.yml << 'EOF'
+          version: '3.8'
+          services:
+            breezeehr:
+              image: ghcr.io/${{ github.repository }}:main
+              restart: unless-stopped
+              expose:
+                - "3000"
+              environment:
+                - APP_HOST=0.0.0.0
+                - APP_PORT=3000
+                - RUST_LOG=info
+                - SUPABASE_URL=${{ secrets.SUPABASE_URL_PROD }}
+                - SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY_PROD }}
+                - SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY_PROD }}
+                - SUPABASE_JWT_SECRET=${{ secrets.SUPABASE_JWT_SECRET_PROD }}
+                - SUPABASE_DB_URL=${{ secrets.SUPABASE_DB_URL_PROD }}
+              networks:
+                - app-network
+            
+            caddy:
+              image: caddy:2-alpine
+              restart: unless-stopped
+              ports:
+                - "80:80"
+                - "443:443"
+              volumes:
+                - ./Caddyfile.prod:/etc/caddy/Caddyfile:ro
+                - caddy_data:/data
+                - caddy_config:/config
+                - /var/log/caddy:/var/log/caddy
+              networks:
+                - app-network
+              depends_on:
+                - breezeehr
+
+          volumes:
+            caddy_data:
+            caddy_config:
+
+          networks:
+            app-network:
+              driver: bridge
+          EOF
+          
+          # Start services
+          docker compose -f docker-compose.prod.yml up -d
+          
+          # Show status
+          docker compose -f docker-compose.prod.yml ps
+          
+          # Clean up old images
+          docker image prune -f
