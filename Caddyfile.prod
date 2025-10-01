@@ -6,15 +6,6 @@ breezeehr.ddrcode.me, www.breezeehr.ddrcode.me {
     # Let's Encrypt certificates (automatic)
     tls ddresser05@gmail.com
 
-    # Rate limiting
-    rate_limit {
-        zone dynamic {
-            key {remote_host}
-            events 100
-            window 1m
-        }
-    }
-
     # API routes - Changed to HTTP
     handle /api/* {
         reverse_proxy http://breezeehr:3000 {
