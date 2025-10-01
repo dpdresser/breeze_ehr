@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  RUST_VERSION: 1.75  # Fixed: 1.88 doesn't exist yet
+  RUST_VERSION: 1.88
 
 jobs:
   # Continuous Integration
