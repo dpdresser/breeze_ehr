@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y curl ca-certificates && rm -rf /var/lib
 
 WORKDIR /app
 COPY --from=builder /app/target/release/breeze_ehr /app/breeze_ehr
+COPY --from=builder /app/public /app/public
 
 EXPOSE 3000
 ENTRYPOINT ["/app/breeze_ehr"]

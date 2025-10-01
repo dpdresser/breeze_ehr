@@ -22,12 +22,12 @@ breezeehr.ddrcode.me, www.breezeehr.ddrcode.me {
 
     # Health check - Add this for container health checks
     handle /health {
-        reverse_proxy http://breezeehr:3000
+        reverse_proxy http://breezeehr:3000/api/health
     }
 
-    # Frontend
+    # Frontend - Updated to use container's public directory
     handle {
-        root * /var/www/breezeehr/public
+        root * /app/public
         try_files {path} {path}.html {path}/index.html /index.html
         file_server
         
