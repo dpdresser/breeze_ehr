@@ -21,7 +21,7 @@ async fn retrieve_user_id_returns_200() {
         .and_then(|v| v.as_str())
         .expect("token not found in response");
 
-    let response = app.post_retrieve_user_id(token, &email).await;
+    let response = app.post_retrieve_user_id(token, email).await;
     assert_eq!(response.status().as_u16(), 200);
     let response_body: serde_json::Value = response
         .json()

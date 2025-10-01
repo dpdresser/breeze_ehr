@@ -34,7 +34,7 @@ impl TestApp {
 
     pub async fn health_check(&self) -> reqwest::Response {
         self.http_client
-            .get(&format!("https://{}/api/health", &self.address))
+            .get(format!("https://{}/api/health", &self.address))
             .send()
             .await
             .expect("Failed to execute request.")
@@ -43,7 +43,7 @@ impl TestApp {
     pub async fn delete_user(&self, token: &str, user_id: &str) -> reqwest::Response {
         let request_body = json!({ "user_id": user_id });
         self.http_client
-            .delete(&format!("https://{}/api/auth/delete_user", &self.address))
+            .delete(format!("https://{}/api/auth/delete_user", &self.address))
             .bearer_auth(token)
             .json(&request_body)
             .send()
@@ -54,7 +54,7 @@ impl TestApp {
     pub async fn post_retrieve_user_id(&self, token: &str, email: &str) -> reqwest::Response {
         let request_body = json!({ "email": email });
         self.http_client
-            .post(&format!(
+            .post(format!(
                 "https://{}/api/auth/retrieve_user_id",
                 &self.address
             ))
@@ -68,7 +68,7 @@ impl TestApp {
     pub async fn post_signin(&self, email: &str, password: &str) -> reqwest::Response {
         let request_body = json!({ "email": email, "password": password });
         self.http_client
-            .post(&format!("https://{}/api/auth/signin", &self.address))
+            .post(format!("https://{}/api/auth/signin", &self.address))
             .json(&request_body)
             .send()
             .await
@@ -77,7 +77,7 @@ impl TestApp {
 
     pub async fn post_signout(&self, token: &str) -> reqwest::Response {
         self.http_client
-            .post(&format!("https://{}/api/auth/signout", &self.address))
+            .post(format!("https://{}/api/auth/signout", &self.address))
             .bearer_auth(token)
             .send()
             .await
@@ -97,7 +97,7 @@ impl TestApp {
         }
 
         self.http_client
-            .post(&format!("https://{}/api/auth/signup", &self.address))
+            .post(format!("https://{}/api/auth/signup", &self.address))
             .json(&request_body)
             .send()
             .await
@@ -213,7 +213,7 @@ static LINK_REGEX: Lazy<Regex> =
 
 pub fn find_link_in_html(html: &str) -> Option<String> {
     LINK_REGEX.find(html).map(|m| {
-        let cleaned = m.as_str().trim_end_matches(|c| c == '"' || c == ')');
+        let cleaned = m.as_str().trim_end_matches(['"', ')']);
         cleaned.replace("&amp;", "&")
     })
 }
