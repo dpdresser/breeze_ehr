@@ -1,0 +1,37 @@
+services:
+  breezeehr:
+    build: .
+    image: breezeehr:latest
+    env_file:
+      - .env
+    expose:
+      - "3000"
+    volumes:
+      - logs_volume:/app/logs
+    networks:
+      - app-network
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "8443:8443"
+      - "80:80"
+    volumes:
+      - ./Caddyfile.dev:/etc/caddy/Caddyfile
+      - ./public:/srv/frontend
+      - ./logs:/var/log/caddy
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - app-network
+    depends_on:
+      - breezeehr
+
+volumes:
+  logs_volume:
+  caddy_data:
+  caddy_config:
+
+networks:
+  app-network:
+    driver: bridge

@@ -1,10 +1,10 @@
-# SovaEHR
-MVP of SovaEHR SaaS Product
+# BreezeEHR
+MVP of BreezeEHR SaaS Product
 
 ## Project Structure
 
 ```
-sovaehr/
+breezeehr/
 ├── 📄 README.md
 ├── 📄 .env
 ├── 📄 .env.example

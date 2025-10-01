@@ -1,8 +1,8 @@
+use breezeehr::{App, utils::config::AppConfig};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use reqwest::redirect::Policy;
 use serde_json::{Value, json};
-use sovaehr::{App, utils::config::AppConfig};
 use std::time::{Duration, Instant};
 
 pub struct TestApp {

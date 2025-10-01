@@ -1,10 +1,10 @@
-localhost:3000, 127.0.0.1:3000 {
+localhost:8443, 127.0.0.1:8443 {
     # Self-signed certificates for development
     tls internal
 
     # API routes to Rust backend
     handle /api/* {
-        reverse_proxy https://127.0.0.1:8443 {
+        reverse_proxy https://breezeehr:3000 {
             transport http {
                 tls_insecure_skip_verify
             }
@@ -13,7 +13,7 @@ localhost:3000, 127.0.0.1:3000 {
 
     # Documentation
     handle /docs/* {
-        reverse_proxy https://127.0.0.1:8443 {
+        reverse_proxy https://breezeehr:3000 {
             transport http {
                 tls_insecure_skip_verify
             }
@@ -22,14 +22,14 @@ localhost:3000, 127.0.0.1:3000 {
 
     # Frontend static files
     handle {
-        root * frontend
+        root * /srv/frontend
         try_files {path} {path}.html {path}/index.html /index.html
         file_server
     }
 
     # Development logging (more verbose)
     log {
-        output file logs/dev-access.log
+        output file /var/log/caddy/dev-access.log
         level DEBUG
         format filter {
             wrap console

@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Breeze EHR</title>
+    <meta name="description" content="Breeze EHR Dashboard - Manage your therapy practice efficiently">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-body">
+    <!-- Dashboard Header -->
+    <header class="dashboard-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1 class="logo">Breeze EHR</h1>
+                <nav class="breadcrumb">
+                    <span>Dashboard</span>
+                </nav>
+            </div>
+            <div class="header-right">
+                <div class="search-container">
+                    <input type="text" placeholder="Search patients, appointments..." class="search-input">
+                    <button class="search-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="header-actions">
+                    <button class="notification-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+                            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+                        </svg>
+                        <span class="notification-badge">3</span>
+                    </button>
+                    <div class="user-menu">
+                        <div class="user-avatar">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2350723C'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E" alt="Dr. Sarah Johnson">
+                        </div>
+                        <div class="user-info">
+                            <span class="user-name">Dr. Sarah Johnson</span>
+                            <span class="user-role">Licensed Therapist</span>
+                        </div>
+                        <button class="user-dropdown" id="user-dropdown-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6,9 12,15 18,9"/>
+                            </svg>
+                        </button>
+                        <div class="user-dropdown-menu" id="user-dropdown-menu" style="display: none;">
+                            <a href="#" class="dropdown-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                                Profile
+                            </a>
+                            <a href="#" class="dropdown-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="3"/>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                                </svg>
+                                Settings
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <button class="dropdown-item signout-btn" id="signout-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                    <polyline points="16,17 21,12 16,7"/>
+                                    <line x1="21" y1="12" x2="9" y2="12"/>
+                                </svg>
+                                Sign Out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9,22 9,12 15,12 15,22"/>
+                </svg>
+                Dashboard
+            </a>
+            <a href="#" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Patients
+            </a>
+            <a href="#" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                Schedule
+            </a>
+            <a href="#" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                Telehealth
+            </a>
+            <a href="#" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14,2 14,8 20,8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10,9 9,9 8,9"/>
+                </svg>
+                Notes & Records
+            </a>
+            <a href="#" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+                Billing
+            </a>
+            <a href="#" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10"/>
+                    <line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+                Reports
+            </a>
+            <a href="#" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                Settings
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Welcome Section -->
+        <section class="welcome-section">
+            <div class="welcome-content">
+                <h2>Good morning, Dr. Johnson</h2>
+                <p>You have 6 appointments scheduled for today</p>
+            </div>
+            <div class="quick-actions">
+                <button class="quick-action-btn primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    Add Patient
+                </button>
+                <button class="quick-action-btn secondary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    Schedule Appointment
+                </button>
+            </div>
+        </section>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Today's Schedule -->
+            <div class="dashboard-card schedule-card">
+                <div class="card-header">
+                    <h3>Today's Schedule</h3>
+                    <span class="date">Monday, September 30, 2025</span>
+                </div>
+                <div class="card-content">
+                    <div class="appointment-list">
+                        <div class="appointment-item current">
+                            <div class="appointment-time">
+                                <span class="time">9:00 AM</span>
+                                <span class="duration">50 min</span>
+                            </div>
+                            <div class="appointment-info">
+                                <h4>Michael Chen</h4>
+                                <p>Individual Therapy - Anxiety Management</p>
+                                <span class="appointment-type telehealth">Telehealth</span>
+                            </div>
+                            <div class="appointment-actions">
+                                <button class="join-btn">Join Call</button>
+                            </div>
+                        </div>
+                        
+                        <div class="appointment-item">
+                            <div class="appointment-time">
+                                <span class="time">10:30 AM</span>
+                                <span class="duration">50 min</span>
+                            </div>
+                            <div class="appointment-info">
+                                <h4>Emma Rodriguez</h4>
+                                <p>Couples Therapy - Communication Skills</p>
+                                <span class="appointment-type in-person">In-Person</span>
+                            </div>
+                            <div class="appointment-actions">
+                                <button class="prep-btn">View Notes</button>
+                            </div>
+                        </div>
+                        
+                        <div class="appointment-item">
+                            <div class="appointment-time">
+                                <span class="time">1:00 PM</span>
+                                <span class="duration">50 min</span>
+                            </div>
+                            <div class="appointment-info">
+                                <h4>James Wilson</h4>
+                                <p>Individual Therapy - Depression Treatment</p>
+                                <span class="appointment-type telehealth">Telehealth</span>
+                            </div>
+                            <div class="appointment-actions">
+                                <button class="prep-btn">Prepare</button>
+                            </div>
+                        </div>
+                        
+                        <div class="appointment-item">
+                            <div class="appointment-time">
+                                <span class="time">2:30 PM</span>
+                                <span class="duration">50 min</span>
+                            </div>
+                            <div class="appointment-info">
+                                <h4>Lisa Thompson</h4>
+                                <p>Family Therapy - Teen Behavioral Issues</p>
+                                <span class="appointment-type in-person">In-Person</span>
+                            </div>
+                            <div class="appointment-actions">
+                                <button class="prep-btn">View Notes</button>
+                            </div>
+                        </div>
+                        
+                        <div class="appointment-item">
+                            <div class="appointment-time">
+                                <span class="time">4:00 PM</span>
+                                <span class="duration">50 min</span>
+                            </div>
+                            <div class="appointment-info">
+                                <h4>David Park</h4>
+                                <p>Individual Therapy - PTSD Treatment</p>
+                                <span class="appointment-type telehealth">Telehealth</span>
+                            </div>
+                            <div class="appointment-actions">
+                                <button class="prep-btn">Prepare</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="dashboard-card stats-card">
+                <div class="card-header">
+                    <h3>Practice Overview</h3>
+                    <span class="period">This Month</span>
+                </div>
+                <div class="card-content">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value">127</div>
+                            <div class="stat-label">Active Patients</div>
+                            <div class="stat-change positive">+12%</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">89</div>
+                            <div class="stat-label">Appointments</div>
+                            <div class="stat-change positive">+8%</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">$14,250</div>
+                            <div class="stat-label">Revenue</div>
+                            <div class="stat-change positive">+15%</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">95%</div>
+                            <div class="stat-label">Show Rate</div>
+                            <div class="stat-change positive">+3%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Telehealth -->
+            <div class="dashboard-card telehealth-card">
+                <div class="card-header">
+                    <h3>Next Telehealth Session</h3>
+                </div>
+                <div class="card-content">
+                    <div class="next-session">
+                        <div class="session-info">
+                            <h4>Michael Chen</h4>
+                            <p>Individual Therapy Session</p>
+                            <div class="session-time">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12,6 12,12 16,14"/>
+                                </svg>
+                                Starts in 5 minutes (9:00 AM)
+                            </div>
+                        </div>
+                        <div class="session-actions">
+                            <button class="join-session-btn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                                </svg>
+                                Join Session
+                            </button>
+                            <button class="test-btn">Test Connection</button>
+                        </div>
+                    </div>
+                    <div class="tech-check">
+                        <h5>Technology Check</h5>
+                        <div class="check-items">
+                            <div class="check-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"/>
+                                </svg>
+                                Camera working
+                            </div>
+                            <div class="check-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"/>
+                                </svg>
+                                Microphone working
+                            </div>
+                            <div class="check-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"/>
+                                </svg>
+                                Internet connection stable
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Notes -->
+            <div class="dashboard-card notes-card">
+                <div class="card-header">
+                    <h3>Recent Notes</h3>
+                    <button class="view-all-btn">View All</button>
+                </div>
+                <div class="card-content">
+                    <div class="notes-list">
+                        <div class="note-item">
+                            <div class="note-patient">Sarah Miller</div>
+                            <div class="note-type">Progress Note</div>
+                            <div class="note-date">Today, 8:30 AM</div>
+                            <div class="note-status pending">Needs Review</div>
+                        </div>
+                        <div class="note-item">
+                            <div class="note-patient">Robert Johnson</div>
+                            <div class="note-type">Initial Assessment</div>
+                            <div class="note-date">Yesterday, 3:00 PM</div>
+                            <div class="note-status completed">Completed</div>
+                        </div>
+                        <div class="note-item">
+                            <div class="note-patient">Anna Davis</div>
+                            <div class="note-type">Treatment Plan</div>
+                            <div class="note-date">Yesterday, 1:15 PM</div>
+                            <div class="note-status completed">Completed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Billing Summary -->
+            <div class="dashboard-card billing-card">
+                <div class="card-header">
+                    <h3>Billing Summary</h3>
+                    <span class="period">Last 30 Days</span>
+                </div>
+                <div class="card-content">
+                    <div class="billing-stats">
+                        <div class="billing-stat">
+                            <span class="label">Outstanding Claims</span>
+                            <span class="value">$8,450</span>
+                        </div>
+                        <div class="billing-stat">
+                            <span class="label">Pending Payments</span>
+                            <span class="value">$3,200</span>
+                        </div>
+                        <div class="billing-stat">
+                            <span class="label">Collected</span>
+                            <span class="value success">$12,100</span>
+                        </div>
+                    </div>
+                    <div class="billing-chart">
+                        <div class="chart-bar">
+                            <div class="bar outstanding" style="height: 60%"></div>
+                            <div class="bar pending" style="height: 25%"></div>
+                            <div class="bar collected" style="height: 85%"></div>
+                        </div>
+                        <div class="chart-labels">
+                            <span>Outstanding</span>
+                            <span>Pending</span>
+                            <span>Collected</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task List -->
+            <div class="dashboard-card tasks-card">
+                <div class="card-header">
+                    <h3>Today's Tasks</h3>
+                </div>
+                <div class="card-content">
+                    <div class="tasks-list">
+                        <div class="task-item">
+                            <input type="checkbox" id="task1" class="task-checkbox">
+                            <label for="task1">Review insurance pre-authorization for Emma Rodriguez</label>
+                        </div>
+                        <div class="task-item">
+                            <input type="checkbox" id="task2" class="task-checkbox" checked>
+                            <label for="task2">Complete progress notes for morning sessions</label>
+                        </div>
+                        <div class="task-item">
+                            <input type="checkbox" id="task3" class="task-checkbox">
+                            <label for="task3">Follow up on payment from Blue Cross Blue Shield</label>
+                        </div>
+                        <div class="task-item">
+                            <input type="checkbox" id="task4" class="task-checkbox">
+                            <label for="task4">Prepare treatment plan for David Park</label>
+                        </div>
+                        <div class="task-item">
+                            <input type="checkbox" id="task5" class="task-checkbox">
+                            <label for="task5">Send appointment reminders for tomorrow</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        // Dashboard JavaScript
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Check authentication first
+            await checkAuthentication();
+            
+            // User dropdown toggle
+            const userMenu = document.querySelector('.user-menu');
+            const userDropdownBtn = document.getElementById('user-dropdown-btn');
+            const userDropdownMenu = document.getElementById('user-dropdown-menu');
+            const signoutBtn = document.getElementById('signout-btn');
+            
+            // Ensure dropdown is hidden initially
+            userDropdownMenu.classList.remove('show');
+            
+            // Toggle dropdown when clicking anywhere on the user menu
+            userMenu.addEventListener('click', function(e) {
+                e.stopPropagation();
+                userDropdownMenu.classList.toggle('show');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!userMenu.contains(e.target)) {
+                    userDropdownMenu.classList.remove('show');
+                }
+            });
+            
+            // Close dropdown when pressing escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    userDropdownMenu.classList.remove('show');
+                }
+            });
+            
+            // Handle signout
+            signoutBtn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                
+                try {
+                    // Get token from localStorage or wherever you store it
+                    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+                    
+                    if (token) {
+                        // Call the signout API
+                        const response = await fetch('/api/auth/signout', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            // Clear stored authentication data
+                            localStorage.removeItem('authToken');
+                            sessionStorage.removeItem('authToken');
+                            localStorage.removeItem('userEmail');
+                            sessionStorage.removeItem('userEmail');
+                            
+                            // Show success message (optional)
+                            showNotification('Signed out successfully', 'success');
+                            
+                            // Redirect to signin page after a short delay
+                            setTimeout(() => {
+                                window.location.href = '/signin.html';
+                            }, 1000);
+                        } else {
+                            console.error('Signout failed:', response.statusText);
+                            showNotification('Signout failed. Please try again.', 'error');
+                        }
+                    } else {
+                        // No token found, redirect anyway
+                        window.location.href = '/signin.html';
+                    }
+                } catch (error) {
+                    console.error('Signout error:', error);
+                    showNotification('Network error. Signing out locally.', 'warning');
+                    
+                    // Clear local data and redirect even on error
+                    localStorage.removeItem('authToken');
+                    sessionStorage.removeItem('authToken');
+                    localStorage.removeItem('userEmail');
+                    sessionStorage.removeItem('userEmail');
+                    
+                    setTimeout(() => {
+                        window.location.href = '/signin.html';
+                    }, 1500);
+                }
+            });
+            
+            // Authentication check function
+            async function checkAuthentication() {
+                const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+                
+                if (!token) {
+                    // No token found, redirect to signin
+                    console.log('No token found, redirecting to signin');
+                    window.location.href = '/signin.html';
+                    return;
+                }
+                
+                // Basic JWT token format check (should have 3 parts separated by dots)
+                const tokenParts = token.split('.');
+                if (tokenParts.length !== 3) {
+                    console.log('Invalid token format, redirecting to signin');
+                    clearAuthData();
+                    return;
+                }
+                
+                try {
+                    // Decode the JWT payload to check expiration (basic check)
+                    const payload = JSON.parse(atob(tokenParts[1]));
+                    const currentTime = Math.floor(Date.now() / 1000);
+                    
+                    if (payload.exp && payload.exp < currentTime) {
+                        console.log('Token expired, redirecting to signin');
+                        clearAuthData();
+                        return;
+                    }
+                    
+                    console.log('Token appears valid and not expired');
+                    
+                } catch (error) {
+                    console.error('Token validation error:', error);
+                    clearAuthData();
+                }
+            }
+            
+            // Helper function to clear auth data and redirect
+            function clearAuthData() {
+                localStorage.removeItem('authToken');
+                sessionStorage.removeItem('authToken');
+                localStorage.removeItem('userEmail');
+                sessionStorage.removeItem('userEmail');
+                window.location.href = '/signin.html';
+            }
+            
+            // Simple notification function
+            function showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `notification notification-${type}`;
+                notification.textContent = message;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 9999;
+                    animation: slideIn 0.3s ease;
+                `;
+                
+                // Set background color based on type
+                switch(type) {
+                    case 'success':
+                        notification.style.backgroundColor = '#C38D94';
+                        notification.style.color = 'white';
+                        break;
+                    case 'error':
+                        notification.style.backgroundColor = '#ef4444';
+                        break;
+                    case 'warning':
+                        notification.style.backgroundColor = '#f59e0b';
+                        break;
+                    default:
+                        notification.style.backgroundColor = '#3b82f6';
+                }
+                
+                document.body.appendChild(notification);
+                
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }, 3000);
+            }
+        });
+        
+        // Add CSS animations for notifications
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

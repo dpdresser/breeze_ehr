@@ -47,14 +47,14 @@ impl App {
 
     pub async fn run(&self) -> AppResult<()> {
         // OpenAPI service
-        let api_service = OpenApiService::new(AppApi, "SovaEHR API", "1.0")
+        let api_service = OpenApiService::new(AppApi, "BreezeEHR API", "1.0")
             .server(format!("https://{}", self.config.app_address));
         let ui = api_service.swagger_ui();
 
         // CORS
         let cors = Cors::new()
-            .allow_origin("https://localhost:3000")
-            .allow_origin("https://127.0.0.1:3000")
+            .allow_origin("https://localhost:8443")
+            .allow_origin("https://127.0.0.1:8443")
             .allow_methods(vec![
                 Method::GET,
                 Method::POST,

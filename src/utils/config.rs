@@ -65,7 +65,7 @@ impl AppConfig {
 
         let log_level = "info".to_string();
 
-        let supabase_url = std::env::var("SUPABASE_URL").expect("SUPABASE_URL must be set");
+        let supabase_url = std::env::var("SUPABASE_URL_TEST").expect("SUPABASE_URL must be set");
         let supabase_anon_key =
             std::env::var("SUPABASE_ANON_KEY").expect("SUPABASE_ANON_KEY must be set");
         let supabase_service_role_key = std::env::var("SUPABASE_SERVICE_ROLE_KEY")

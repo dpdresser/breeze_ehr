@@ -1,4 +1,4 @@
-use sovaehr::{
+use breezeehr::{
     App,
     utils::{config::AppConfig, tracing::init_tracing},
 };
