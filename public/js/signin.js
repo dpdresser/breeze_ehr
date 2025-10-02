@@ -155,46 +155,59 @@ document.addEventListener('DOMContentLoaded', function() {
         setLoadingState(true);
         
         // Call actual authentication API
-        fetch('/api/auth/signin', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json' 
-            },
-            body: JSON.stringify({ email, password })
-        })
-        .then(async response => {
-            const data = await response.json();
-            
+        handleSignIn(email, password);
+    });
+    
+    async function handleSignIn(email, password) {
+        try {
+            const response = await fetch('/api/auth/signin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
+
             if (response.ok) {
-                // Authentication successful
-                console.log('Sign in successful');
+                const data = await response.json();
                 
                 // Store the token
                 if (data.token) {
                     localStorage.setItem('authToken', data.token);
-                    localStorage.setItem('userEmail', email);
+                    
+                    // Show success message
+                    showGlobalSuccess('Sign in successful! Redirecting to dashboard...');
+                    
+                    // Redirect to dashboard after a brief delay
+                    setTimeout(() => {
+                        window.location.href = '/dashboard.html';
+                    }, 1000);
+                } else {
+                    setLoadingState(false);
+                    showGlobalError('Authentication failed: No token received');
+                }
+            } else {
+                // Handle HTTP error responses
+                setLoadingState(false);
+                let errorMessage = 'Sign in failed';
+                
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || errorData.message || errorMessage;
+                } catch (e) {
+                    // If response is not JSON, use status text
+                    errorMessage = response.statusText || errorMessage;
                 }
                 
-                // Show success message
-                showGlobalSuccess('Sign in successful! Redirecting to dashboard...');
-                
-                // Redirect to dashboard
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1000);
-                
-            } else {
-                // Authentication failed
-                setLoadingState(false);
-                showGlobalError(data.message || 'Invalid email or password. Please try again.');
+                showGlobalError(errorMessage);
+                console.error('Sign in failed:', response.status, errorMessage);
             }
-        })
-        .catch(error => {
-            console.error('Sign in error:', error);
+        } catch (error) {
             setLoadingState(false);
-            showGlobalError('Network error. Please check your connection and try again.');
-        });
-    });
+            showGlobalError('Network error: Please check your connection and try again');
+            console.error('Sign in network error:', error);
+        }
+    }
     
     // Loading state management
     function setLoadingState(loading) {
