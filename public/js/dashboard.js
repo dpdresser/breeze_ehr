@@ -36,55 +36,39 @@ document.addEventListener('DOMContentLoaded', async function() {
     signoutBtn.addEventListener('click', async function(e) {
         e.preventDefault();
         
+        // Always clear local data first
+        const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        
+        // Clear stored authentication data immediately
+        localStorage.removeItem('authToken');
+        sessionStorage.removeItem('authToken');
+        localStorage.removeItem('userEmail');
+        sessionStorage.removeItem('userEmail');
+        
         try {
-            // Get token from localStorage or wherever you store it
-            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-            
             if (token) {
-                // Call the signout API
-                const response = await fetch('/api/auth/signout', {
+                // Try to notify the server, but don't wait for success
+                fetch('/api/auth/signout', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     }
+                }).catch(error => {
+                    console.log('Server signout failed, but local signout completed:', error);
                 });
-                
-                if (response.ok) {
-                    // Clear stored authentication data
-                    localStorage.removeItem('authToken');
-                    sessionStorage.removeItem('authToken');
-                    localStorage.removeItem('userEmail');
-                    sessionStorage.removeItem('userEmail');
-                    
-                    // Show success message (optional)
-                    showNotification('Signed out successfully', 'success');
-                    
-                    // Redirect to signin page after a short delay
-                    setTimeout(() => {
-                        window.location.href = '/signin.html';
-                    }, 1000);
-                } else {
-                    console.error('Signout failed:', response.statusText);
-                    showNotification('Signout failed. Please try again.', 'error');
-                }
-            } else {
-                // No token found, redirect anyway
-                window.location.href = '/signin.html';
             }
-        } catch (error) {
-            console.error('Signout error:', error);
-            showNotification('Network error. Signing out locally.', 'warning');
             
-            // Clear local data and redirect even on error
-            localStorage.removeItem('authToken');
-            sessionStorage.removeItem('authToken');
-            localStorage.removeItem('userEmail');
-            sessionStorage.removeItem('userEmail');
+            // Show success message
+            showNotification('Signed out successfully', 'success');
             
+            // Redirect to signin page
             setTimeout(() => {
                 window.location.href = '/signin.html';
-            }, 1500);
+            }, 500);
+            
+        } catch (error) {
+            console.log('Signout process completed with local cleanup:', error);
         }
     });
     
