@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function validatePassword(password) {
-        return password.length >= 1; // Relaxed for demo
+        return password.length >= 8; // Minimum 8 characters
     }
     
     function showError(input, message) {
@@ -228,7 +228,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Google Sign In (placeholder)
     googleSigninBtn.addEventListener('click', function() {
         // This would integrate with Google OAuth
-        // For demo purposes, redirect to dashboard
         console.log('Google sign in clicked');
         alert('Google Sign-In would be integrated here with your Supabase authentication.');
         
@@ -240,8 +239,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Sign up link
     signupLink.addEventListener('click', function(e) {
         e.preventDefault();
-        // Redirect to sign up page (to be created)
-        alert('Sign-up page would be created here. For demo, you can use any credentials to sign in.');
+        // Redirect to sign up page
+        window.location.href = 'signup.html';
     });
     
     // Forgot password link
@@ -249,29 +248,6 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         // Handle forgot password
         alert('Password reset functionality would be implemented here with Supabase auth.');
-    });
-    
-    // Demo functionality - auto-fill for easier testing
-    function fillDemoCredentials() {
-        emailInput.value = 'demo@breezeehr.com';
-        passwordInput.value = 'demo123';
-    }
-    
-    // Add demo button for easier testing (remove in production)
-    const demoAlert = document.querySelector('.demo-alert');
-    if (demoAlert) {
-        demoAlert.style.cursor = 'pointer';
-        demoAlert.addEventListener('click', fillDemoCredentials);
-        demoAlert.title = 'Click to auto-fill demo credentials';
-    }
-    
-    // Keyboard shortcuts
-    document.addEventListener('keydown', function(e) {
-        // Alt + D for demo credentials (remove in production)
-        if (e.altKey && e.key === 'd') {
-            e.preventDefault();
-            fillDemoCredentials();
-        }
     });
     
     // Analytics tracking (placeholder)
